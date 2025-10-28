@@ -38,6 +38,7 @@ const InstructorAnalytics = lazy(() => import('@/pages/instructor/Analytics'));
 const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'));
 const GlobalAnalytics = lazy(() => import('@/pages/GlobalAnalytics'));
 const StudentCompletedExams = lazy(() => import('@/pages/student/CompletedExams'));
+const ExamGrading = lazy(() => import('@/pages/instructor/ExamGrading'));
 
 function AppRoutes() {
   return (
@@ -128,6 +129,11 @@ function AppRoutes() {
       <Route path="/instructor/completed-exams/:examId/submissions/:submissionId" element={
         <ProtectedRoute allowedRoles={['instructor', 'admin']}>
           <SubmissionDetail />
+        </ProtectedRoute>
+      } />
+      <Route path="/instructor/grading/:submissionId" element={
+        <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+          <ExamGrading />
         </ProtectedRoute>
       } />
       

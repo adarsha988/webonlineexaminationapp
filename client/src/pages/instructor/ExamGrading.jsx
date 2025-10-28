@@ -26,6 +26,7 @@ import {
   Award
 } from 'lucide-react';
 import InstructorLayout from '@/layouts/InstructorLayout';
+import api from '../../api/axios';
 
 const ExamGrading = () => {
   const { submissionId } = useParams();
@@ -38,6 +39,7 @@ const ExamGrading = () => {
   const [grading, setGrading] = useState(false);
   const [gradedAnswers, setGradedAnswers] = useState({});
   const [feedback, setFeedback] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (submissionId) {
@@ -48,36 +50,38 @@ const ExamGrading = () => {
   const fetchSubmissionDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/instructor/grading/submission/${submissionId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setSubmission(data.data);
+      // Try to fetch real data from API
+      const response = await api.get(`/api/instructor/grading/submission/${submissionId}`);
+      
+      if (response.data && response.data.success && response.data.data) {
+        // Use real data
+        setSubmission(response.data.data);
+        console.log('✅ Using real submission data');
         
         // Initialize graded answers for manual grading questions
         const initialGrades = {};
-        data.data.answers.forEach(answer => {
+        response.data.data.answers.forEach(answer => {
           if (answer.gradingStatus === 'pending_manual_grading') {
             initialGrades[answer.questionId] = {
-              score: 0,
+              score: answer.score || 0,
               feedback: answer.feedback || ''
             };
           }
         });
         setGradedAnswers(initialGrades);
       } else {
-        throw new Error('Failed to fetch submission details');
+        throw new Error('No data returned from API');
       }
     } catch (error) {
-      console.error('Error fetching submission:', error);
+      console.error('❌ Error fetching submission:', error);
+      setError(error.message || 'Failed to load submission');
+      setSubmission(null);
+      
       toast({
         title: "Error",
-        description: "Failed to load submission details",
-        variant: "destructive",
+        description: "Failed to load submission. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -115,27 +119,28 @@ const ExamGrading = () => {
         feedback: grading.feedback
       }));
 
-      const response = await fetch(`/api/instructor/grading/submission/${submissionId}/grade`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          gradedAnswers: gradingData,
-          feedback: feedback
-        })
+      console.log('📝 Submitting grading for submission:', submissionId);
+      console.log('📊 Grading data:', gradingData);
+      console.log('💬 Feedback:', feedback);
+
+      const response = await api.post(`/api/instructor/grading/submission/${submissionId}/grade`, {
+        gradedAnswers: gradingData,
+        feedback: feedback
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      console.log('✅ API Response:', response);
+
+      if (response.data && response.data.success) {
+        console.log('✅ Grading saved to database successfully!');
         toast({
           title: "Grading Complete!",
-          description: `Final score: ${data.data.score}/${submission.examId.totalMarks} (${data.data.percentage}%)`,
+          description: `Final score: ${response.data.data.score}/${submission.examId.totalMarks} (${response.data.data.percentage}%)`,
         });
         
-        // Refresh submission data
-        await fetchSubmissionDetails();
+        // Navigate back to submissions list after 1.5 seconds
+        setTimeout(() => {
+          navigate(`/instructor/completed-exams/${submission.examId._id}/submissions`);
+        }, 1500);
       } else {
         throw new Error('Failed to submit grading');
       }
@@ -220,10 +225,10 @@ const ExamGrading = () => {
           <div className="flex items-center gap-4">
             <Button 
               variant="outline" 
-              onClick={() => navigate('/instructor/dashboard')}
+              onClick={() => navigate(`/instructor/completed-exams/${submission.examId._id}/submissions`)}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back to Submissions
             </Button>
             <div>
               <h1 className="text-2xl font-bold">{submission.examId.title}</h1>

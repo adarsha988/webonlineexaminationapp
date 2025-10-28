@@ -34,6 +34,9 @@ const studentExamSchema = new mongoose.Schema({
     answer: {
       type: mongoose.Schema.Types.Mixed // String or Array for multiple answers
     },
+    studentAnswer: {
+      type: mongoose.Schema.Types.Mixed // Alias for answer
+    },
     isCorrect: {
       type: Boolean,
       default: null
@@ -42,10 +45,30 @@ const studentExamSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    score: {
+      type: Number,
+      default: 0
+    },
+    maxScore: {
+      type: Number,
+      default: 0
+    },
     timeSpent: {
       type: Number, // in seconds
       default: 0
-    }
+    },
+    gradingStatus: {
+      type: String,
+      enum: ['auto_graded', 'manually_graded', 'pending_manual_grading', 'pending'],
+      default: 'pending'
+    },
+    feedback: {
+      type: String,
+      default: ''
+    },
+    questionText: String,
+    questionType: String,
+    correctAnswer: mongoose.Schema.Types.Mixed
   }],
   status: {
     type: String,
@@ -73,15 +96,32 @@ const studentExamSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  instructorFeedback: {
+    type: String,
+    default: null
+  },
+  gradingStatus: {
+    type: String,
+    enum: ['pending', 'partial', 'complete'],
+    default: 'pending'
+  },
+  autoGradedScore: {
+    type: Number,
+    default: 0
+  },
+  manuallyGradedScore: {
+    type: Number,
+    default: 0
+  },
+  gradedAt: {
+    type: Date,
+    default: null
+  },
   startedAt: {
     type: Date,
     default: null
   },
   submittedAt: {
-    type: Date,
-    default: null
-  },
-  gradedAt: {
     type: Date,
     default: null
   },

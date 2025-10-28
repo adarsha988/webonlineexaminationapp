@@ -1,54 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Users, CheckCircle, Clock, FileText, TrendingUp } from 'lucide-react';
+import { AlertCircle, Users, CheckCircle, Clock, FileText, TrendingUp, ArrowLeft, Eye, Award, Calendar } from 'lucide-react';
 import { completedExamsAPI } from '../../api/completedExams';
 import { useToast } from '@/hooks/useToast';
+import InstructorLayout from '../../layouts/InstructorLayout';
 
 const CompletedExams = () => {
-  const [exams, setExams] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [completedExams, setCompletedExams] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { toast } = useToast();
   const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadCompletedExams = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        if (!user?._id) {
-          throw new Error('User not authenticated');
-        }
-
-        const response = await completedExamsAPI.fetchCompletedExams(user._id);
-        
-        if (response.success) {
-          setExams(response.exams || []);
-        } else {
-          throw new Error(response.message || 'Failed to fetch completed exams');
-        }
-      } catch (err) {
-        console.error('Error loading completed exams:', err);
-        setError(err.message);
-        toast({
-          title: 'Error',
-          description: 'Failed to load completed exams. Please try again.',
-          variant: 'destructive'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCompletedExams();
-  }, [user?._id, toast]);
 
   // Dummy data for testing until API is ready
   const dummyCompletedExams = [
@@ -210,12 +179,13 @@ const CompletedExams = () => {
           </div>
 
           <div className="flex gap-2">
-            <Link href={`/instructor/completed-exams/${exam.id}/submissions`}>
-              <Button className="flex-1">
-                <Eye className="h-4 w-4 mr-2" />
-                View Submissions
-              </Button>
-            </Link>
+            <Button 
+              className="flex-1"
+              onClick={() => navigate(`/instructor/completed-exams/${exam._id || exam.id}/submissions`)}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View Submissions
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -253,12 +223,10 @@ const CompletedExams = () => {
             <h1 className="text-3xl font-bold text-gray-900">Completed Exams</h1>
             <p className="text-gray-600 mt-1">Review and grade student submissions</p>
           </div>
-          <Link href="/instructor/exams">
-            <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to All Exams
-            </Button>
-          </Link>
+          <Button variant="outline" onClick={() => navigate('/instructor/exams')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to All Exams
+          </Button>
         </div>
 
         {/* Stats Overview */}
@@ -328,7 +296,7 @@ const CompletedExams = () => {
           ) : completedExams.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {completedExams.map((exam) => (
-                <ExamCard key={exam.id} exam={exam} />
+                <ExamCard key={exam._id || exam.id} exam={exam} />
               ))}
             </div>
           ) : (
@@ -339,12 +307,10 @@ const CompletedExams = () => {
                 <p className="text-gray-600 mb-4">
                   You don't have any completed exams yet. Completed exams will appear here once students finish taking them.
                 </p>
-                <Link href="/instructor/exams">
-                  <Button>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View All Exams
-                  </Button>
-                </Link>
+                <Button onClick={() => navigate('/instructor/exams')}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All Exams
+                </Button>
               </CardContent>
             </Card>
           )}

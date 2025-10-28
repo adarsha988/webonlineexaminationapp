@@ -147,35 +147,61 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
     const { submissionId } = req.params;
     const { gradedAnswers, feedback } = req.body;
     
-    const submission = await StudentExam.findById(submissionId);
+    console.log('📝 Grading submission:', submissionId);
+    console.log('📊 Graded answers received:', gradedAnswers);
+    
+    const submission = await StudentExam.findById(submissionId).populate('examId', 'totalMarks');
     if (!submission) {
       return res.status(404).json({ success: false, message: 'Submission not found' });
     }
     
+    console.log('📄 Submission found:', submission._id);
+    console.log('📋 Current answers:', submission.answers.length);
+    
     // Update manually graded answers
     let totalScore = submission.autoGradedScore || 0;
     let manuallyGradedScore = 0;
+    let updatedCount = 0;
     
     submission.answers.forEach(answer => {
-      const gradedAnswer = gradedAnswers.find(ga => ga.questionId === answer.questionId);
-      if (gradedAnswer && answer.gradingStatus === 'pending_manual_grading') {
+      // Convert ObjectId to string for comparison
+      const answerQuestionId = answer.questionId.toString();
+      const gradedAnswer = gradedAnswers.find(ga => ga.questionId.toString() === answerQuestionId);
+      
+      if (gradedAnswer) {
+        console.log(`✅ Updating answer for question ${answerQuestionId}:`, {
+          oldScore: answer.score,
+          newScore: gradedAnswer.score,
+          status: answer.gradingStatus
+        });
+        
         answer.score = gradedAnswer.score;
         answer.feedback = gradedAnswer.feedback || answer.feedback;
         answer.gradingStatus = 'manually_graded';
         manuallyGradedScore += gradedAnswer.score;
+        updatedCount++;
       }
     });
+    
+    console.log(`📊 Updated ${updatedCount} answers`);
+    console.log(`💯 Scores - Auto: ${submission.autoGradedScore || 0}, Manual: ${manuallyGradedScore}`);
     
     // Update submission totals
     submission.manuallyGradedScore = manuallyGradedScore;
     submission.score = (submission.autoGradedScore || 0) + manuallyGradedScore;
-    submission.percentage = Math.round((submission.score / submission.examId.totalMarks) * 100);
+    
+    // Get total marks from exam or submission
+    const totalMarks = submission.examId?.totalMarks || submission.totalMarks || 100;
+    submission.percentage = Math.round((submission.score / totalMarks) * 100);
     submission.gradingStatus = 'complete';
     submission.status = 'completed';
     submission.instructorFeedback = feedback;
     submission.gradedAt = new Date();
     
     await submission.save();
+    
+    console.log('✅ Grading saved successfully');
+    console.log(`📊 Final score: ${submission.score}/${totalMarks} (${submission.percentage}%)`);
     
     res.json({
       success: true,
@@ -184,12 +210,13 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
         score: submission.score,
         percentage: submission.percentage,
         autoGradedScore: submission.autoGradedScore || 0,
-        manuallyGradedScore: manuallyGradedScore
+        manuallyGradedScore: manuallyGradedScore,
+        totalMarks: totalMarks
       }
     });
     
   } catch (error) {
-    console.error('Error grading submission:', error);
+    console.error('❌ Error grading submission:', error);
     res.status(500).json({ success: false, message: 'Error grading submission', error: error.message });
   }
 });

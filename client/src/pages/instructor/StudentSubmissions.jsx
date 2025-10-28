@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, 
   User, 
@@ -11,7 +11,8 @@ import {
   FileText,
   Award,
   Users,
-  Download
+  Download,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +25,7 @@ const StudentSubmissions = () => {
   const { user } = useSelector((state) => state.auth);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { examId } = useParams();
   
   console.log('🔍 StudentSubmissions Component Loaded');
@@ -34,125 +36,71 @@ const StudentSubmissions = () => {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Dummy data for testing
-  const dummyExam = {
-    id: examId,
-    title: 'Mathematics Final Exam',
-    subject: 'Mathematics',
-    date: '2024-01-15',
-    duration: 120,
-    totalMarks: 100,
-    participantCount: 25,
-    gradedCount: 20,
-    averageScore: 78.5
-  };
-
-  const dummySubmissions = [
-    {
-      id: '1',
-      studentId: 'std001',
-      studentName: 'John Smith',
-      studentEmail: 'john.smith@example.com',
-      submissionStatus: 'completed',
-      submittedAt: '2024-01-15T10:30:00Z',
-      score: 85,
-      totalMarks: 100,
-      gradingStatus: 'graded',
-      timeSpent: 115
-    },
-    {
-      id: '2',
-      studentId: 'std002',
-      studentName: 'Sarah Johnson',
-      studentEmail: 'sarah.johnson@example.com',
-      submissionStatus: 'completed',
-      submittedAt: '2024-01-15T10:45:00Z',
-      score: 92,
-      totalMarks: 100,
-      gradingStatus: 'graded',
-      timeSpent: 108
-    },
-    {
-      id: '3',
-      studentId: 'std003',
-      studentName: 'Mike Davis',
-      studentEmail: 'mike.davis@example.com',
-      submissionStatus: 'completed',
-      submittedAt: '2024-01-15T11:15:00Z',
-      score: null,
-      totalMarks: 100,
-      gradingStatus: 'pending',
-      timeSpent: 120
-    },
-    {
-      id: '4',
-      studentId: 'std004',
-      studentName: 'Emily Wilson',
-      studentEmail: 'emily.wilson@example.com',
-      submissionStatus: 'completed',
-      submittedAt: '2024-01-15T09:50:00Z',
-      score: 78,
-      totalMarks: 100,
-      gradingStatus: 'graded',
-      timeSpent: 95
-    },
-    {
-      id: '5',
-      studentId: 'std005',
-      studentName: 'David Brown',
-      studentEmail: 'david.brown@example.com',
-      submissionStatus: 'completed',
-      submittedAt: '2024-01-15T11:30:00Z',
-      score: null,
-      totalMarks: 100,
-      gradingStatus: 'pending',
-      timeSpent: 118
-    }
-  ];
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (examId) {
       fetchExamAndSubmissions();
     }
-  }, [examId]);
+  }, [examId, refreshKey]);
+
+  // Refresh data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('🔄 Page focused, refreshing data...');
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const fetchExamAndSubmissions = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Fetch real data from API
-      const response = await fetch(`/api/instructor/grading/exam/${examId}/submissions`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      // Try to fetch real data from API
+      const response = await api.get(`/api/instructor/grading/exam/${examId}/submissions`);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 Exam submissions data:', data);
-        
-        if (data.data && data.data.length > 0) {
-          // Extract exam details from first submission
-          setExam(data.data[0].examId);
-          setSubmissions(data.data);
+      console.log('📊 Exam submissions response:', response);
+      
+      if (response.data && response.data.success) {
+        if (response.data.data && response.data.data.length > 0) {
+          // Use real data from database
+          setExam(response.data.data[0].examId);
+          setSubmissions(response.data.data);
+          console.log('✅ Loaded', response.data.data.length, 'submissions from database');
         } else {
-          // No submissions yet
+          // No submissions found
+          console.log('⚠️ No submissions found for this exam');
           setExam(null);
           setSubmissions([]);
+          toast({
+            title: "No Submissions",
+            description: "No student submissions found for this exam yet.",
+            variant: "default"
+          });
         }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch exam submissions');
+        // API error
+        console.error('❌ API returned unsuccessful response');
+        setError('Failed to load submissions');
+        toast({
+          title: "Error",
+          description: "Failed to load submissions. Please try again.",
+          variant: "destructive"
+        });
       }
       
     } catch (err) {
-      console.error('Error fetching exam submissions:', err);
-      setError(err.message || 'Failed to load exam submissions');
+      console.error('❌ Error fetching exam submissions:', err);
+      setError(err.message || 'Failed to load submissions');
+      setExam(null);
+      setSubmissions([]);
       toast({
         title: "Error",
-        description: "Failed to load exam submissions. Please try again.",
+        description: "Failed to connect to server. Please check your connection and try again.",
         variant: "destructive"
       });
     } finally {
@@ -301,10 +249,20 @@ const StudentSubmissions = () => {
             </h1>
             <p className="text-gray-600 mt-1">Student submissions and grading</p>
           </div>
-          <Button onClick={exportResults} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Results
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setRefreshKey(prev => prev + 1)} 
+              variant="outline"
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button onClick={exportResults} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Results
+            </Button>
+          </div>
         </div>
 
         {/* Exam Info */}

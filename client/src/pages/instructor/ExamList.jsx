@@ -8,7 +8,6 @@ import {
   Filter, 
   Plus, 
   Edit, 
-  Eye, 
   Trash2, 
   Send, 
   Clock, 
@@ -345,18 +344,20 @@ const ExamList = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <Link to={`/instructor/exams/${exam._id}`}>
-                                  <DropdownMenuItem>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Details
-                                  </DropdownMenuItem>
-                                </Link>
                                 <Link to={`/instructor/exams/${exam._id}/edit`}>
                                   <DropdownMenuItem>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit Exam
                                   </DropdownMenuItem>
                                 </Link>
+                                {(exam.status === 'completed' || exam.status === 'published') && exam.attempts?.length > 0 && (
+                                  <Link to={`/instructor/completed-exams/${exam._id}/submissions`}>
+                                    <DropdownMenuItem>
+                                      <Users className="h-4 w-4 mr-2" />
+                                      View Submissions ({exam.attempts?.length || 0})
+                                    </DropdownMenuItem>
+                                  </Link>
+                                )}
                                 {exam.status === 'draft' && (
                                   <DropdownMenuItem
                                     onClick={() => {
