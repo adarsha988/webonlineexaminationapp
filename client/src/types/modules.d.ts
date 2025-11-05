@@ -26,3 +26,6 @@ declare module '@/components/admin/ActiveTodayPage';
 declare module '@/components/admin/SystemAnalyticsPage';
 declare module '@/components/admin/ExamsPage';
 declare module '@/components/GlobalNotifications';
+declare module '@/pages/instructor/ExamGrading';
+declare module '@/pages/instructor/ProctoringReport';
+declare module '@/pages/student/ExamSecurityCheck';

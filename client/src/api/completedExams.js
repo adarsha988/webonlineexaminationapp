@@ -28,6 +28,21 @@ export const completedExamsAPI = {
   },
 
   /**
+   * Get instructor's completed exams with grading information
+   * @param {string} instructorId - The instructor's ID
+   * @returns {Promise} API response with completed exams
+   */
+  getInstructorCompletedExams: async (instructorId) => {
+    try {
+      const response = await api.get(`/api/instructor/grading/completed-exams/${instructorId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching instructor completed exams:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Fetch exam details with submissions
    * @param {string} examId - The exam ID
    * @returns {Promise} API response with exam and submissions

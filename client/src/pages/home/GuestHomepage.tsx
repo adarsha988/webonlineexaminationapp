@@ -1,58 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Header from '../../components/home/Header';
 import HomePage from '../../components/home/HomePage';
 import Footer from '../../components/home/Footer';
 import AuthModal from '../../components/auth/AuthModal';
 import { checkAuth } from '../../store/authSlice';
+import type { RootState, AppDispatch } from '../../store/store';
 
-const GuestHomepage = ({ initialAuthMode = 'signup' }) => {
+interface GuestHomepageProps {
+  initialAuthMode?: 'login' | 'signup';
+}
+
+const GuestHomepage = ({ initialAuthMode = 'signup' }: GuestHomepageProps) => {
   console.log('🏠 GUEST HOMEPAGE: Component rendering with initialAuthMode:', initialAuthMode);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!!initialAuthMode);
-  const [authMode, setAuthMode] = useState(initialAuthMode || 'login'); // 'login' or 'signup'
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialAuthMode || 'login');
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const hasRedirected = useRef(false);
   
-  const { isAuthenticated, user, isLoading } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Check auth on mount if we have a token but no user data
+    // Check auth ONLY on mount if we have a token but no user data
     const token = localStorage.getItem('token');
-    if (token && !user && !isLoading) {
+    if (token && !user && !isLoading && !hasRedirected.current) {
       console.log('🔍 HOMEPAGE: Token exists but no user data - checking authentication');
       dispatch(checkAuth());
-    } else if (!token && isAuthenticated) {
-      // Token missing but state says authenticated - clear the state
-      console.warn('⚠️ HOMEPAGE: No token but authenticated state - clearing');
-      localStorage.removeItem('token');
-      window.location.reload();
     }
-  }, [dispatch, user, isLoading, isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Redirect authenticated users to their appropriate dashboard
-    // IMPORTANT: Only redirect if we have BOTH authentication AND user data
-    if (isAuthenticated && user && user.role && !isLoading) {
+    if (isAuthenticated && user && user.role && !isLoading && !hasRedirected.current) {
       console.log('🏠 HOMEPAGE: Redirecting authenticated user:', user.role);
-      const dashboardRoutes = {
+      hasRedirected.current = true;
+      
+      const dashboardRoutes: Record<string, string> = {
         admin: '/admin/dashboard',
         instructor: '/instructor/dashboard',
         student: '/student/dashboard'
       };
       const targetRoute = dashboardRoutes[user.role] || '/student/dashboard';
       console.log('🏠 HOMEPAGE: Redirecting to:', targetRoute);
-      navigate(targetRoute, { replace: true });
-    } else if (isAuthenticated && !user && !isLoading) {
-      // If authenticated but no user data, something went wrong - clear auth
-      console.warn('⚠️ HOMEPAGE: Authenticated but no user data - clearing auth');
-      localStorage.removeItem('token');
-      window.location.reload();
+      
+      setTimeout(() => {
+        navigate(targetRoute, { replace: true });
+      }, 0);
     }
-  }, [isAuthenticated, user, navigate, isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user, isLoading]);
 
-  const openAuthModal = (mode = 'login') => {
+  const openAuthModal = (mode: 'login' | 'signup' = 'login') => {
     setAuthMode(mode);
     setIsAuthModalOpen(true);
   };

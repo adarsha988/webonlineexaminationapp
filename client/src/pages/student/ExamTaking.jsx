@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { studentExamAPI } from '@/api/studentExams';
+import AIProctoringMonitor from '@/components/proctoring/AIProctoringMonitor';
 
 const ExamTaking = () => {
   const { id: examId } = useParams();
@@ -53,6 +54,7 @@ const ExamTaking = () => {
   const [violations, setViolations] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const [proctoringEnabled, setProctoringEnabled] = useState(true); // AI Proctoring enabled by default
   
   const timerRef = useRef(null);
   const autoSaveRef = useRef(null);
@@ -489,6 +491,20 @@ const ExamTaking = () => {
     }
   };
 
+  const handleProctoringViolation = (violation) => {
+    // Handle violations detected by AI proctoring monitor
+    setViolations(prev => [...prev, violation]);
+    
+    // Show toast notification for critical violations
+    if (violation.type === 'multiple_faces' || violation.type === 'tab_switch') {
+      toast({
+        title: "Warning",
+        description: violation.description,
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -638,6 +654,16 @@ const ExamTaking = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* AI Proctoring Monitor */}
+      {proctoringEnabled && examSession && (
+        <AIProctoringMonitor 
+          examId={examId}
+          studentId={user?._id}
+          sessionId={examSession._id}
+          onViolation={handleProctoringViolation}
+        />
+      )}
+
       {/* Header with Timer */}
       <div className="bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">

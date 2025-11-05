@@ -12,7 +12,8 @@ import {
   Award,
   Users,
   Download,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -182,13 +183,23 @@ const StudentSubmissions = () => {
           <p className="text-sm text-gray-900">{formatDate(submission.submittedAt)}</p>
         </div>
 
-        <Button 
-          className="w-full"
-          onClick={() => navigate(`/instructor/grading/${submission._id}`)}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          {submission.gradingStatus === 'partial' ? 'Grade Submission' : 'View Details'}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            className="flex-1"
+            onClick={() => navigate(`/instructor/grading/${submission._id}`)}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            {submission.gradingStatus === 'partial' ? 'Grade' : 'View'}
+          </Button>
+          <Button 
+            variant="outline"
+            className="flex-1"
+            onClick={() => navigate(`/instructor/proctoring-report/${submission._id}`)}
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Report
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

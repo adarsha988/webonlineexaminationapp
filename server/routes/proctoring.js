@@ -5,6 +5,88 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Simple log endpoint (alias for quick logging during exams)
+router.post('/log', authenticateToken, async (req, res) => {
+  try {
+    const { 
+      examId,
+      studentId,
+      sessionId,
+      eventType, 
+      severity = 'medium', 
+      description, 
+      timestamp
+    } = req.body;
+    
+    const userId = req.user.userId;
+
+    // Find or create attempt
+    let attempt = await Attempt.findOne({ 
+      userId: studentId || userId,
+      examId,
+      status: { $in: ['in_progress', 'started'] }
+    }).sort({ startTime: -1 });
+
+    if (!attempt) {
+      // If no active attempt, just log it without linking
+      console.log('No active attempt found for proctoring log:', { examId, studentId, eventType });
+      return res.json({
+        success: true,
+        message: 'Event logged (no active attempt)',
+        logged: true
+      });
+    }
+
+    // Create proctoring log
+    const proctoringLog = new ProctoringLog({
+      attemptId: attempt._id,
+      eventType,
+      severity,
+      description,
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
+      metadata: {
+        sessionId
+      }
+    });
+
+    await proctoringLog.save();
+
+    // Add to attempt's proctoring logs
+    if (!attempt.proctoring.proctoringLogs) {
+      attempt.proctoring.proctoringLogs = [];
+    }
+    attempt.proctoring.proctoringLogs.push(proctoringLog._id);
+
+    // Update violation if it's a violation event
+    const violationEvents = [
+      'no_face', 'multiple_faces', 'face_mismatch', 'gaze_away', 
+      'tab_switch', 'window_blur', 'multiple_voices', 'copy_paste', 
+      'right_click', 'dev_tools_open', 'fullscreen_exit'
+    ];
+
+    if (violationEvents.includes(eventType)) {
+      await attempt.addViolation(eventType, severity, description, {});
+    } else {
+      await attempt.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Event logged successfully',
+      logId: proctoringLog._id,
+      suspicionScore: attempt.proctoring.suspicionScore,
+      integrityRating: attempt.proctoring.integrityRating
+    });
+  } catch (error) {
+    console.error('Error logging proctoring event:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to log event',
+      error: error.message 
+    });
+  }
+});
+
 // Log proctoring event
 router.post('/log-event', authenticateToken, async (req, res) => {
   try {

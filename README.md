@@ -89,9 +89,10 @@ A comprehensive online examination platform built with React, Node.js, Express, 
    ```
 
 6. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
+   - Application: http://localhost:5000
    - Health Check: http://localhost:5000/health
+   
+   > **Note**: The application runs on a **single port (5000)** in development mode. Both the client and API are served together. See [SINGLE_PORT_SETUP.md](SINGLE_PORT_SETUP.md) for details.
 
 ## 🔧 Configuration
 
@@ -192,12 +193,16 @@ npm run build
 npm start
 ```
 
+The application will run on the PORT specified in your environment variables (default: 5000).
+
 ### Environment Variables for Production
 ```env
 NODE_ENV=production
+PORT=5000
 DATABASE_URL=your-production-database-url
 JWT_SECRET=your-production-jwt-secret
 CLIENT_URL=https://your-domain.com
+ALLOWED_ORIGINS=https://your-domain.com
 ```
 
 ### Docker Deployment (Optional)

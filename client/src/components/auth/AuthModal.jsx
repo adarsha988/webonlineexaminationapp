@@ -73,10 +73,12 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
       
       console.log('📋 LOGIN RESULT:', result);
       
-      // Close modal on successful login
+      // Close modal on successful login - use setTimeout to prevent rerender race condition
       if (loginUser.fulfilled.match(result)) {
         console.log('✅ Login successful, closing modal');
-        onClose();
+        setTimeout(() => {
+          onClose();
+        }, 100); // Small delay to let state update propagate
       } else {
         console.log('❌ Login failed:', result);
       }
@@ -90,7 +92,9 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
       
       // Close modal on successful registration
       if (registerUser.fulfilled.match(result)) {
-        onClose();
+        setTimeout(() => {
+          onClose();
+        }, 100);
       }
     }
   };

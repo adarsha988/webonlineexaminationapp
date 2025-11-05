@@ -179,51 +179,67 @@ export function DashboardStats() {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
+        // Disable all stat cards
+        const isDisabled = true;
         return (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ y: -8, scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="cursor-pointer"
-            onClick={() => handleCardClick(stat.route)}
+            whileHover={isDisabled ? {} : { y: -8, scale: 1.03 }}
+            whileTap={isDisabled ? {} : { scale: 0.97 }}
+            className={isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
+            onClick={() => !isDisabled && handleCardClick(stat.route)}
           >
-            <Card className="relative overflow-hidden bg-white border-0 shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl group">
+            <Card className={`relative overflow-hidden bg-white border-0 shadow-md transition-all duration-300 rounded-2xl group ${
+              isDisabled ? '' : 'hover:shadow-xl'
+            }`}>
               {/* Gradient overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 transition-opacity duration-300 ${
+                isDisabled ? '' : 'group-hover:opacity-10'
+              }`} />
               
               <CardContent className="p-6 relative z-10">
                 {/* Icon */}
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 ${
+                  isDisabled ? '' : 'group-hover:scale-110'
+                }`}>
                   <IconComponent className={`w-6 h-6 ${stat.color}`} />
                 </div>
                 
                 {/* Value */}
-                <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 group-hover:text-gray-800 transition-colors duration-300">
+                <div className={`text-2xl md:text-3xl font-bold text-gray-900 mb-1 transition-colors duration-300 ${
+                  isDisabled ? '' : 'group-hover:text-gray-800'
+                }`}>
                   {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
                 </div>
                 
                 {/* Title */}
-                <h3 className="text-sm font-semibold text-gray-700 mb-1 group-hover:text-gray-800 transition-colors duration-300">
+                <h3 className={`text-sm font-semibold text-gray-700 mb-1 transition-colors duration-300 ${
+                  isDisabled ? '' : 'group-hover:text-gray-800'
+                }`}>
                   {stat.title}
                 </h3>
                 
                 {/* Subtitle */}
-                <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors duration-300">
-                  View Details
+                <p className={`text-xs text-gray-500 transition-colors duration-300 ${
+                  isDisabled ? '' : 'group-hover:text-gray-600'
+                }`}>
+                  {isDisabled ? 'Stats Only' : 'View Details'}
                 </p>
                 
                 {/* Hover indicator */}
-                <motion.div
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  initial={{ scale: 0, rotate: -45 }}
-                  whileHover={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
-                </motion.div>
+                {!isDisabled && (
+                  <motion.div
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ scale: 0, rotate: -45 }}
+                    whileHover={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                  </motion.div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/useToast';
 import { 
   Plus, 
@@ -221,7 +221,8 @@ const QuestionBank = () => {
                 New Question
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden dialog-content-high-priority flex flex-col p-0">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden dialog-content-high-priority flex flex-col p-0 bg-white z-[1000]">
+
               <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
                 <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                   <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -229,7 +230,9 @@ const QuestionBank = () => {
                   </div>
                   Create New Question
                 </DialogTitle>
-                <p className="text-sm text-gray-600 mt-2">Fill in the details below to add a new question to your bank</p>
+                <DialogDescription className="text-sm text-gray-600 mt-2">
+                  Fill in the details below to add a new question to your bank
+                </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-5 overflow-y-auto flex-1 px-6 py-4 custom-scrollbar">

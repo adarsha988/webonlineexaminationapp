@@ -519,7 +519,7 @@ export async function seedComprehensiveData() {
         questions: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map(q => q._id),
         createdBy: admin._id,
         instructorId: instructors[0]._id, // Dr. John
-        status: 'published',
+        status: 'completed',
         scheduledDate: pastDate,
         endDate: new Date(pastDate.getTime() + 2 * 60 * 60 * 1000),
         attempts: students.map(student => ({
@@ -545,7 +545,7 @@ export async function seedComprehensiveData() {
         questions: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map(q => q._id),
         createdBy: admin._id,
         instructorId: instructors[1]._id, // Dr. Sarah
-        status: 'published',
+        status: 'completed',
         scheduledDate: pastDate,
         endDate: new Date(pastDate.getTime() + 2 * 60 * 60 * 1000),
         attempts: students.map(student => ({
@@ -621,7 +621,9 @@ export async function seedComprehensiveData() {
       // Exam 1 (Algebra Basics) - Completed scores
       // Bob: 80/100
       {
+        exam: exams[0]._id,
         examId: exams[0]._id,
+        student: students[0]._id,
         studentId: students[0]._id, // Bob
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -632,15 +634,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 80,
+        totalMarks: 100,
         percentage: 80,
         grade: 'B+',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 30 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 90 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 120 * 60 * 1000)
       },
       // Emma: 65/100
       {
+        exam: exams[0]._id,
         examId: exams[0]._id,
+        student: students[1]._id,
         studentId: students[1]._id, // Emma
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -651,15 +657,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 65,
+        totalMarks: 100,
         percentage: 65,
         grade: 'B-',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 45 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 105 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 125 * 60 * 1000)
       },
       // Liam: 90/100
       {
+        exam: exams[0]._id,
         examId: exams[0]._id,
+        student: students[2]._id,
         studentId: students[2]._id, // Liam
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -670,15 +680,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 90,
+        totalMarks: 100,
         percentage: 90,
         grade: 'A-',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 15 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 75 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 110 * 60 * 1000)
       },
       // Sophia: 50/100
       {
+        exam: exams[0]._id,
         examId: exams[0]._id,
+        student: students[3]._id,
         studentId: students[3]._id, // Sophia
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -689,15 +703,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 50,
+        totalMarks: 100,
         percentage: 50,
         grade: 'D',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 130 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 150 * 60 * 1000)
       },
       // Noah: 70/100
       {
+        exam: exams[0]._id,
         examId: exams[0]._id,
+        student: students[4]._id,
         studentId: students[4]._id, // Noah
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -708,8 +726,10 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 70,
+        totalMarks: 100,
         percentage: 70,
         grade: 'B',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 20 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 85 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 115 * 60 * 1000)
@@ -718,7 +738,9 @@ export async function seedComprehensiveData() {
       // Exam 2 (Programming) - Completed scores
       // Bob: 75/100
       {
+        exam: exams[1]._id,
         examId: exams[1]._id,
+        student: students[0]._id,
         studentId: students[0]._id, // Bob
         answers: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -729,15 +751,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 75,
+        totalMarks: 100,
         percentage: 75,
         grade: 'B',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 2 * 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 4 * 60 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 5 * 60 * 60 * 1000)
       },
       // Emma: 85/100
       {
+        exam: exams[1]._id,
         examId: exams[1]._id,
+        student: students[1]._id,
         studentId: students[1]._id, // Emma
         answers: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -748,15 +774,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 85,
+        totalMarks: 100,
         percentage: 85,
         grade: 'A-',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 2.5 * 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 4.5 * 60 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 5.5 * 60 * 60 * 1000)
       },
       // Liam: 60/100
       {
+        exam: exams[1]._id,
         examId: exams[1]._id,
+        student: students[2]._id,
         studentId: students[2]._id, // Liam
         answers: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -767,15 +797,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 60,
+        totalMarks: 100,
         percentage: 60,
         grade: 'C+',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 3 * 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 5 * 60 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 6 * 60 * 60 * 1000)
       },
       // Sophia: 95/100
       {
+        exam: exams[1]._id,
         examId: exams[1]._id,
+        student: students[3]._id,
         studentId: students[3]._id, // Sophia
         answers: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -786,15 +820,19 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 95,
+        totalMarks: 100,
         percentage: 95,
         grade: 'A+',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 2.2 * 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 4 * 60 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 5.2 * 60 * 60 * 1000)
       },
       // Noah: 55/100
       {
+        exam: exams[1]._id,
         examId: exams[1]._id,
+        student: students[4]._id,
         studentId: students[4]._id, // Noah
         answers: questions.filter(q => q.subject === 'Computer Science' && q.scope === 'shared').slice(0, 5).map((q, i) => ({
           questionId: q._id,
@@ -805,8 +843,10 @@ export async function seedComprehensiveData() {
         })),
         status: 'submitted',
         score: 55,
+        totalMarks: 100,
         percentage: 55,
         grade: 'D+',
+        gradingStatus: 'complete',
         startedAt: new Date(pastDate.getTime() + 3.5 * 60 * 60 * 1000),
         submittedAt: new Date(pastDate.getTime() + 5.5 * 60 * 60 * 1000),
         gradedAt: new Date(pastDate.getTime() + 6.5 * 60 * 60 * 1000)
@@ -814,7 +854,9 @@ export async function seedComprehensiveData() {
 
       // Exam 3 (Geometry Quiz) - Ongoing with 2-3 saved answers per student
       ...students.map(student => ({
+        exam: exams[2]._id,
         examId: exams[2]._id,
+        student: student._id,
         studentId: student._id,
         answers: questions.filter(q => q.subject === 'Mathematics' && q.scope === 'private').slice(0, 2).map((q, i) => ({
           questionId: q._id,

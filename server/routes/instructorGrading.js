@@ -1,5 +1,6 @@
 import express from 'express';
 const router = express.Router();
+import mongoose from 'mongoose';
 import Exam from '../models/exam.model.js';
 import StudentExam from '../models/studentExam.model.js';
 import User from '../models/user.model.js';
@@ -13,7 +14,7 @@ router.get('/completed-exams/:instructorId', authenticateToken, async (req, res)
     // Find exams created by this instructor
     const instructorExams = await Exam.find({ 
       instructorId: instructorId,
-      status: 'published'
+      status: { $in: ['published', 'completed'] }
     }).select('_id title subject totalMarks');
     
     const examIds = instructorExams.map(exam => exam._id);
@@ -21,7 +22,7 @@ router.get('/completed-exams/:instructorId', authenticateToken, async (req, res)
     // Find student submissions for these exams
     const completedExams = await StudentExam.find({
       examId: { $in: examIds },
-      status: { $in: ['completed', 'pending_grading'] },
+      status: { $in: ['submitted', 'completed', 'pending_grading', 'auto_submitted'] },
       submittedAt: { $exists: true }
     })
     .populate('studentId', 'name email')
@@ -75,9 +76,18 @@ router.get('/exam/:examId/submissions', authenticateToken, async (req, res) => {
     const { examId } = req.params;
     const { page = 1, limit = 10 } = req.query;
     
+    // Validate if examId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(examId)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid exam ID format',
+        error: `The provided exam ID "${examId}" is not a valid MongoDB ObjectId` 
+      });
+    }
+    
     const submissions = await StudentExam.find({
       examId: examId,
-      status: { $in: ['completed', 'pending_grading'] },
+      status: { $in: ['submitted', 'completed', 'pending_grading', 'auto_submitted'] },
       submittedAt: { $exists: true }
     })
     .populate('studentId', 'name email')
@@ -88,7 +98,7 @@ router.get('/exam/:examId/submissions', authenticateToken, async (req, res) => {
     
     const total = await StudentExam.countDocuments({
       examId: examId,
-      status: { $in: ['completed', 'pending_grading'] },
+      status: { $in: ['submitted', 'completed', 'pending_grading', 'auto_submitted'] },
       submittedAt: { $exists: true }
     });
     
@@ -298,7 +308,7 @@ router.get('/stats/:instructorId', authenticateToken, async (req, res) => {
     // Find exams created by this instructor
     const instructorExams = await Exam.find({ 
       instructorId: instructorId,
-      status: 'published'
+      status: { $in: ['published', 'completed'] }
     }).select('_id');
     
     const examIds = instructorExams.map(exam => exam._id);

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/useToast';
 import { ArrowLeft, User, Clock, CheckCircle, FileText, Award, Send, Eye, Edit2, Download } from 'lucide-react';
 import InstructorLayout from '@/layouts/InstructorLayout';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
 const CompletedExamDetails = () => {
@@ -345,6 +345,9 @@ const CompletedExamDetails = () => {
                               <DialogContent>
                                 <DialogHeader>
                                   <DialogTitle>Send Report to {submission.studentId?.name}</DialogTitle>
+                                  <DialogDescription>
+                                    Send the exam results and feedback to the student via email
+                                  </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
                                   <div className="space-y-2">

@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash2, Save, Eye, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/useToast';
 import InstructorLayout from '../../layouts/InstructorLayout';
 import { fetchExamById, fetchExamQuestions, addQuestion, updateExam } from '../../store/examSlice';
@@ -141,7 +145,6 @@ const QuestionBuilder = () => {
         description: 'Question has been added successfully.',
       });
 
-      // Reset form
       setCurrentQuestion({
         type: 'multiple_choice',
         text: '',
@@ -183,7 +186,7 @@ const QuestionBuilder = () => {
         description: 'Your exam is now active and ready for students.',
       });
 
-      setLocation('/instructor/dashboard');
+      navigate('/instructor/dashboard');
     } catch (error) {
       toast({
         title: 'Publish Failed',
@@ -194,18 +197,18 @@ const QuestionBuilder = () => {
   };
 
   const renderQuestionForm = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 relative z-10">
       {/* Question Type */}
-      <div>
-        <Label className="text-sm font-medium text-foreground">Question Type</Label>
+      <div className="relative z-[60]">
+        <Label htmlFor="question-type" className="text-sm font-semibold text-foreground">Question Type</Label>
         <Select 
           value={currentQuestion.type} 
           onValueChange={(value) => handleInputChange('type', value)}
         >
-          <SelectTrigger className="mt-1" data-testid="select-question-type">
-            <SelectValue />
+          <SelectTrigger id="question-type" className="mt-2 border rounded-md focus:ring-2 focus:ring-primary">
+            <SelectValue placeholder="Select type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[9999] bg-background shadow-lg border rounded-md">
             <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
             <SelectItem value="true_false">True/False</SelectItem>
             <SelectItem value="short_answer">Short Answer</SelectItem>
@@ -215,67 +218,69 @@ const QuestionBuilder = () => {
 
       {/* Question Text */}
       <div>
-        <Label className="text-sm font-medium text-foreground">Question Text *</Label>
+        <Label htmlFor="question-text" className="text-sm font-semibold text-foreground">Question Text *</Label>
         <Textarea
+          id="question-text"
           value={currentQuestion.text}
           onChange={(e) => handleInputChange('text', e.target.value)}
-          placeholder="Enter your question here..."
-          className="mt-1"
+          placeholder="Enter your question..."
+          className="mt-2 rounded-md border focus:ring-2 focus:ring-primary"
           rows={3}
-          data-testid="textarea-question-text"
         />
       </div>
 
       {/* Description */}
       <div>
-        <Label className="text-sm font-medium text-foreground">Additional Instructions</Label>
+        <Label htmlFor="question-description" className="text-sm font-semibold text-foreground">Additional Instructions</Label>
         <Textarea
+          id="question-description"
           value={currentQuestion.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Optional additional instructions or context..."
-          className="mt-1"
+          placeholder="Optional additional instructions..."
+          className="mt-2 rounded-md border focus:ring-2 focus:ring-primary"
           rows={2}
-          data-testid="textarea-description"
         />
       </div>
 
       {/* Points */}
       <div>
-        <Label className="text-sm font-medium text-foreground">Points</Label>
+        <Label htmlFor="question-points" className="text-sm font-semibold text-foreground">Points</Label>
         <Input
+          id="question-points"
           type="number"
           min="1"
           max="20"
           value={currentQuestion.points}
           onChange={(e) => handleInputChange('points', parseInt(e.target.value) || 1)}
-          className="mt-1 w-32"
-          data-testid="input-points"
+          className="mt-2 w-32 border rounded-md focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      {/* Type-specific fields */}
+      {/* Multiple Choice Section */}
       {currentQuestion.type === 'multiple_choice' && (
-        <div>
-          <Label className="text-sm font-medium text-foreground">Answer Options</Label>
-          <div className="mt-1 space-y-2">
+        <div className="relative z-20">
+          <Label className="text-sm font-semibold text-foreground">Answer Options</Label>
+          <div className="mt-4 space-y-3">
             {currentQuestion.options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center gap-2">
                 <Input
                   value={option}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                   placeholder={`Option ${index + 1}`}
-                  className="flex-1"
-                  data-testid={`input-option-${index}`}
+                  className="flex-1 border rounded-md focus:ring-2 focus:ring-primary"
                 />
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={currentQuestion.correctAnswer === option ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleInputChange('correctAnswer', option)}
-                  className={currentQuestion.correctAnswer === option ? 'bg-secondary text-secondary-foreground' : ''}
-                  data-testid={`button-correct-${index}`}
+                  className={`min-w-[90px] transition-all ${
+                    currentQuestion.correctAnswer === option
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : ''
+                  }`}
                 >
-                  Correct
+                  {currentQuestion.correctAnswer === option ? '✓ Correct' : 'Mark'}
                 </Button>
                 {currentQuestion.options.length > 2 && (
                   <Button
@@ -283,6 +288,7 @@ const QuestionBuilder = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => removeOption(index)}
+                    className="px-2"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -294,7 +300,7 @@ const QuestionBuilder = () => {
               variant="outline"
               size="sm"
               onClick={addOption}
-              data-testid="button-add-option"
+              className="mt-3 w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Option
@@ -303,17 +309,18 @@ const QuestionBuilder = () => {
         </div>
       )}
 
+      {/* True/False */}
       {currentQuestion.type === 'true_false' && (
-        <div>
-          <Label className="text-sm font-medium text-foreground">Correct Answer</Label>
+        <div className="relative z-[50]">
+          <Label htmlFor="correct-answer-select" className="text-sm font-semibold text-foreground">Correct Answer</Label>
           <Select 
             value={currentQuestion.correctAnswer} 
             onValueChange={(value) => handleInputChange('correctAnswer', value)}
           >
-            <SelectTrigger className="mt-1 w-48" data-testid="select-correct-answer">
+            <SelectTrigger id="correct-answer-select" className="mt-2 border rounded-md focus:ring-2 focus:ring-primary w-48">
               <SelectValue placeholder="Select correct answer" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-background shadow-lg border rounded-md">
               <SelectItem value="true">True</SelectItem>
               <SelectItem value="false">False</SelectItem>
             </SelectContent>
@@ -321,18 +328,18 @@ const QuestionBuilder = () => {
         </div>
       )}
 
+      {/* Short Answer */}
       {currentQuestion.type === 'short_answer' && (
         <div>
-          <Label className="text-sm font-medium text-foreground">Sample Answers (for AI grading)</Label>
-          <div className="mt-1 space-y-2">
+          <Label className="text-sm font-semibold text-foreground">Sample Answers (for AI grading)</Label>
+          <div className="mt-3 space-y-3">
             {currentQuestion.sampleAnswers.map((answer, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center gap-2">
                 <Input
                   value={answer}
                   onChange={(e) => handleSampleAnswerChange(index, e.target.value)}
                   placeholder={`Sample answer ${index + 1}`}
-                  className="flex-1"
-                  data-testid={`input-sample-${index}`}
+                  className="flex-1 border rounded-md focus:ring-2 focus:ring-primary"
                 />
                 {currentQuestion.sampleAnswers.length > 1 && (
                   <Button
@@ -340,6 +347,7 @@ const QuestionBuilder = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => removeSampleAnswer(index)}
+                    className="px-2"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -351,7 +359,7 @@ const QuestionBuilder = () => {
               variant="outline"
               size="sm"
               onClick={addSampleAnswer}
-              data-testid="button-add-sample"
+              className="mt-2 w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Sample Answer
@@ -362,7 +370,7 @@ const QuestionBuilder = () => {
 
       {/* Save Button */}
       <div className="pt-4 border-t border-border">
-        <Button onClick={handleSaveQuestion} disabled={isLoading} data-testid="button-save-question">
+        <Button onClick={handleSaveQuestion} disabled={isLoading} className="w-full">
           <Save className="h-4 w-4 mr-2" />
           {editingIndex >= 0 ? 'Update Question' : 'Add Question'}
         </Button>
@@ -382,40 +390,41 @@ const QuestionBuilder = () => {
 
   return (
     <InstructorLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-background relative">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
-              onClick={() => setLocation('/instructor/dashboard')}
-              data-testid="button-back"
+              onClick={() => navigate('/instructor/dashboard')}
+              className="rounded-lg shadow-sm"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{currentExam.title}</h1>
-              <p className="text-muted-foreground">Add and manage questions for this exam</p>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">{currentExam.title}</h1>
+              <p className="text-sm text-muted-foreground">Add and manage questions for this exam</p>
             </div>
           </div>
           <div className="flex space-x-3">
-            <Button variant="outline" data-testid="button-preview">
+            <Button variant="outline" className="rounded-lg shadow-sm">
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
-            <Button onClick={handlePublishExam} data-testid="button-publish">
+            <Button onClick={handlePublishExam} className="rounded-lg shadow-md bg-primary text-white hover:bg-primary/90">
               Publish Exam
             </Button>
           </div>
         </div>
 
+        {/* Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Question Form */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="shadow-lg border border-border rounded-xl hover:shadow-xl transition-all duration-200">
               <CardHeader>
-                <CardTitle>Add New Question</CardTitle>
+                <CardTitle className="text-lg font-semibold">Add New Question</CardTitle>
               </CardHeader>
               <CardContent>
                 {renderQuestionForm()}
@@ -423,20 +432,19 @@ const QuestionBuilder = () => {
             </Card>
           </div>
 
-          {/* Questions List */}
-          <div>
-            <Card>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="shadow-md border rounded-xl">
               <CardHeader>
                 <CardTitle>Questions ({questions.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted">
                 {questions.length > 0 ? (
                   <div className="space-y-3">
                     {questions.map((question, index) => (
                       <div
                         key={question.id}
-                        className="p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                        data-testid={`question-item-${index}`}
+                        className="p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-all"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -455,40 +463,37 @@ const QuestionBuilder = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No questions added yet.</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Start by adding your first question.
-                    </p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No questions added yet.</p>
+                    <p className="text-sm mt-1">Start by adding your first question.</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Exam Summary */}
-            <Card className="mt-6">
+            <Card className="shadow-md border rounded-xl">
               <CardHeader>
                 <CardTitle>Exam Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Questions:</span>
-                  <span className="text-sm font-medium text-foreground">{questions.length}</span>
+                  <span className="text-muted-foreground">Total Questions:</span>
+                  <span className="font-medium text-foreground">{questions.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Points:</span>
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-muted-foreground">Total Points:</span>
+                  <span className="font-medium text-foreground">
                     {questions.reduce((sum, q) => sum + q.points, 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Duration:</span>
-                  <span className="text-sm font-medium text-foreground">{currentExam.duration} min</span>
+                  <span className="text-muted-foreground">Duration:</span>
+                  <span className="font-medium text-foreground">{currentExam.duration} min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Status:</span>
-                  <span className={`text-sm font-medium ${
-                    currentExam.status === 'active' ? 'text-secondary' : 'text-accent'
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={`font-medium ${
+                    currentExam.status === 'active' ? 'text-green-600' : 'text-yellow-600'
                   }`}>
                     {currentExam.status === 'active' ? 'Published' : 'Draft'}
                   </span>

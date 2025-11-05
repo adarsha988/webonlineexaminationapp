@@ -23,7 +23,7 @@ export const config = {
   server: {
     port: parseInt(process.env.PORT || '5000'),
     nodeEnv: process.env.NODE_ENV || 'development',
-    clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+    clientUrl: process.env.CLIENT_URL || 'http://localhost:5000',
   },
 
   // OpenAI Configuration
@@ -59,7 +59,7 @@ export const config = {
 
   // CORS Configuration
   cors: {
-    allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'],
+    allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5000', 'http://localhost:3000', 'http://localhost:3001'],
   },
 
   // Redis Configuration

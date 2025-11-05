@@ -70,23 +70,49 @@ const CompletedExams = () => {
       setIsLoading(true);
       setError(null);
       
-      // TODO: Replace with actual API call when backend is ready
-      // const response = await api.get(`/api/exams/instructor/${user._id}/completed`);
-      // setCompletedExams(response.data.exams || []);
+      // Fetch real data from API
+      const response = await completedExamsAPI.getInstructorCompletedExams(user._id);
       
-      // Using dummy data for now
-      setTimeout(() => {
+      console.log('📊 Completed exams response:', response);
+      
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        // Transform the data to match the expected format
+        // API returns data grouped by exam with submissions array
+        const transformedExams = response.data.data
+          .filter(examGroup => examGroup && examGroup.exam) // Filter out invalid entries
+          .map(examGroup => ({
+            _id: examGroup.exam._id,
+            id: examGroup.exam._id,
+            title: examGroup.exam.title || 'Untitled Exam',
+            subject: examGroup.exam.subject || 'Unknown',
+            totalMarks: examGroup.exam.totalMarks || 0,
+            duration: examGroup.exam.duration || 0,
+            participantCount: examGroup.stats?.total || examGroup.submissions?.length || 0,
+            gradedCount: examGroup.stats?.fullyGraded || 0,
+            pendingCount: examGroup.stats?.pendingGrading || 0,
+            averageScore: examGroup.stats?.averageScore || 0,
+            status: 'completed'
+          }));
+        
+        setCompletedExams(transformedExams);
+        console.log('✅ Loaded', transformedExams.length, 'completed exams');
+      } else {
+        // Use dummy data as fallback
+        console.log('⚠️ No completed exams found or invalid data structure, using dummy data');
         setCompletedExams(dummyCompletedExams);
-        setIsLoading(false);
-      }, 1000);
+      }
+      
+      setIsLoading(false);
       
     } catch (err) {
-      console.error('Error fetching completed exams:', err);
+      console.error('❌ Error fetching completed exams:', err);
       setError(err.message || 'Failed to load completed exams');
+      // Use dummy data as fallback on error
+      setCompletedExams(dummyCompletedExams);
       setIsLoading(false);
       toast({
         title: "Error",
-        description: "Failed to load completed exams. Please try again.",
+        description: "Failed to load completed exams. Showing sample data.",
         variant: "destructive"
       });
     }
@@ -229,52 +255,7 @@ const CompletedExams = () => {
           </Button>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <FileText className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">{completedExams.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Participants</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {completedExams.reduce((sum, exam) => sum + exam.participantCount, 0)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Fully Graded</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {completedExams.filter(exam => 
-                      exam.gradedCount === exam.participantCount
-                    ).length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Exams List */}
+        {/* Loading State */}
         <div>
           {isLoading ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

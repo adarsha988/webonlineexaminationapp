@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Search, 
@@ -282,6 +282,9 @@ const QuestionReview = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Bulk Approve Questions</DialogTitle>
+                  <DialogDescription>
+                    Approve {bulkSelected.length} selected question{bulkSelected.length > 1 ? 's' : ''} and make them available for use
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <p>Are you sure you want to approve {bulkSelected.length} selected questions?</p>
@@ -515,6 +518,9 @@ const QuestionReview = () => {
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle>Approve Question</DialogTitle>
+                              <DialogDescription>
+                                Approve this question and make it available for use in exams
+                              </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
                               <p>Are you sure you want to approve this question?</p>
@@ -559,6 +565,9 @@ const QuestionReview = () => {
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle>Reject Question</DialogTitle>
+                              <DialogDescription>
+                                Reject this question and provide feedback to the creator
+                              </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
                               <p>Please provide a reason for rejecting this question:</p>
