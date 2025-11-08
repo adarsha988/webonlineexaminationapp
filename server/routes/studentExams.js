@@ -41,23 +41,14 @@ router.get('/student/:studentId/exams/upcoming', async (req, res) => {
       });
     }
     
-    // Get published exams that are scheduled for the future or currently available
+    // Get published exams that are ONLY scheduled for the future (NOT yet started)
     // AND are either assigned to this student or are public (no specific assignments)
     const now = new Date();
-    // Get published exams that are available to this student
+    // Get only truly upcoming exams (not started yet)
     const upcomingExams = await Exam.find({
       $and: [
         { status: 'published' },
-        {
-          $or: [
-            { scheduledDate: { $gt: now } }, // Future scheduled exams
-            { 
-              scheduledDate: { $lte: now }, // Currently available exams
-              endDate: { $gt: now } // That haven't ended yet
-            },
-            { scheduledDate: null } // Exams without specific schedule (always available)
-          ]
-        },
+        { scheduledDate: { $gt: now } }, // Only future exams
         {
           // Only show exams assigned to this student OR public exams
           $or: [
@@ -134,17 +125,27 @@ router.get('/student/:studentId/exams/ongoing', async (req, res) => {
       });
     }
     
-    // Get published exams that are currently active
-    // AND are either assigned to this student or are public (no specific assignments)
+    // Get published exams that are currently active (available to take now)
+    // Includes: exams with scheduledDate <= now AND (endDate > now OR no endDate)
+    // OR exams without scheduledDate (always available)
     const now = new Date();
     const ongoingExams = await Exam.find({
       $and: [
         { status: 'published' },
-        { scheduledDate: { $lte: now } },
         {
           $or: [
-            { endDate: { $gt: now } }, // Haven't ended yet
-            { endDate: null } // No end date specified
+            {
+              // Scheduled exams that are currently in their time window
+              scheduledDate: { $lte: now },
+              $or: [
+                { endDate: { $gt: now } }, // Haven't ended yet
+                { endDate: null } // No end date specified
+              ]
+            },
+            {
+              // Exams without scheduled date (always available)
+              scheduledDate: null
+            }
           ]
         },
         {
@@ -258,6 +259,113 @@ router.get('/student/:studentId/exams/completed', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch completed exams',
+      error: error.message
+    });
+  }
+});
+
+// Get ALL exams available to student (upcoming, ongoing, and completed)
+router.get('/student/:studentId/exams/all', async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    const user = await findUserByIdentifier(studentId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+    
+    const now = new Date();
+    
+    // Get all published exams accessible to this student
+    const allExams = await Exam.find({
+      $and: [
+        { status: 'published' },
+        {
+          // Only show exams assigned to this student OR public exams
+          $or: [
+            { assignedStudents: user._id },
+            { assignedStudents: { $exists: false } },
+            { assignedStudents: { $size: 0 } }
+          ]
+        }
+      ]
+    })
+    .populate('instructorId', 'name email')
+    .populate('questions')
+    .sort({ scheduledDate: -1 });
+
+    // Get student exam records
+    const examIds = allExams.map(exam => exam._id);
+    const studentExams = await StudentExam.find({
+      student: user._id,
+      exam: { $in: examIds }
+    });
+
+    const studentExamMap = {};
+    studentExams.forEach(se => {
+      studentExamMap[se.exam.toString()] = se;
+    });
+
+    // Categorize exams
+    const categorizedExams = {
+      upcoming: [],
+      ongoing: [],
+      completed: []
+    };
+
+    allExams.forEach(exam => {
+      const studentExam = studentExamMap[exam._id.toString()];
+      const examObj = exam.toObject();
+      
+      // Check if completed/submitted
+      if (studentExam && ['completed', 'submitted'].includes(studentExam.status)) {
+        categorizedExams.completed.push({
+          ...examObj,
+          studentStatus: studentExam.status,
+          score: studentExam.score,
+          submittedAt: studentExam.submittedAt
+        });
+      }
+      // Check if currently available (ongoing)
+      else if (
+        (!exam.scheduledDate || exam.scheduledDate <= now) &&
+        (!exam.endDate || exam.endDate > now)
+      ) {
+        categorizedExams.ongoing.push({
+          ...examObj,
+          studentStatus: studentExam?.status || 'not_started',
+          canStart: !studentExam || studentExam.status === 'not_started',
+          timeRemaining: studentExam?.timeRemaining || exam.duration * 60
+        });
+      }
+      // Otherwise it's upcoming
+      else if (exam.scheduledDate && exam.scheduledDate > now) {
+        categorizedExams.upcoming.push({
+          ...examObj,
+          studentStatus: 'not_started',
+          canStart: false
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      data: categorizedExams,
+      counts: {
+        upcoming: categorizedExams.upcoming.length,
+        ongoing: categorizedExams.ongoing.length,
+        completed: categorizedExams.completed.length,
+        total: allExams.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching all exams:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch exams',
       error: error.message
     });
   }

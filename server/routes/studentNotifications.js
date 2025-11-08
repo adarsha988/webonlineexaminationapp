@@ -113,4 +113,36 @@ router.patch('/notifications/read-all', async (req, res) => {
   }
 });
 
+// Delete a notification
+router.delete('/student/:studentId/notifications/:notificationId', async (req, res) => {
+  try {
+    const { studentId, notificationId } = req.params;
+
+    const notification = await Notification.findOneAndDelete({
+      _id: notificationId,
+      userId: studentId
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found or does not belong to this user'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Notification deleted successfully',
+      data: notification
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete notification',
+      error: error.message
+    });
+  }
+});
+
 export default router;

@@ -62,6 +62,8 @@ import proctoringRoutes from "./routes/proctoring.js";
 import resultsRoutes from "./routes/results.js";
 // @ts-ignore
 import aiProctoringRoutes from "./routes/aiProctoring.js";
+// @ts-ignore
+import supportRoutes from "./routes/support.js";
 // Note: Using examsRoutes for both admin and student session endpoints
 
 // Validate environment variables
@@ -86,6 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/testimonial', testimonialRoutes);
   app.use('/api/contact', contactRoutes);
   app.use('/api/college', collegeRoutes);
+  app.use('/api', supportRoutes);
 
   // Admin API Routes
   app.use('/api/stats', statsRoutes);

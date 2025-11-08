@@ -8,6 +8,7 @@ import StudentExam from '../models/studentExam.model.js';
 import Notification from '../models/notification.model.js';
 import Activity from '../models/activity.model.js';
 import SharedBank from '../models/sharedBank.model.js';
+import { seedActivityData } from './activitySeedData.js';
 
 export async function seedComprehensiveData() {
   try {
@@ -939,61 +940,9 @@ export async function seedComprehensiveData() {
 
     console.log('🔔 Created notifications');
 
-    // 9. Create Activity Records
-    const activities = await Activity.insertMany([
-      {
-        user: students[0]._id,
-        type: 'exam_taken',
-        description: 'Completed Data Structures Midterm',
-        metadata: {
-          examId: exams[0]._id,
-          examTitle: 'Data Structures Midterm',
-          score: 4,
-          percentage: 80
-        }
-      },
-      {
-        user: students[1]._id,
-        type: 'exam_taken',
-        description: 'Completed Data Structures Midterm',
-        metadata: {
-          examId: exams[0]._id,
-          examTitle: 'Data Structures Midterm',
-          score: 2,
-          percentage: 40
-        }
-      },
-      {
-        user: instructors[0]._id,
-        type: 'exam_created',
-        description: 'Created Web Development Quiz',
-        metadata: {
-          examId: exams[1]._id,
-          examTitle: 'Web Development Quiz'
-        }
-      },
-      {
-        user: admin._id,
-        type: 'user_created',
-        description: 'Created new student account',
-        metadata: {
-          targetUserId: students[0]._id,
-          targetUserName: students[0].name,
-          targetUserRole: 'student'
-        }
-      },
-      {
-        user: instructors[0]._id,
-        type: 'question_created',
-        description: 'Added new question to Data Structures bank',
-        metadata: {
-          questionId: questions[0]._id,
-          subject: 'Data Structures'
-        }
-      }
-    ]);
-
-    console.log('📈 Created activity records');
+    // 9. Create Activity Records using dedicated seed function
+    await seedActivityData();
+    console.log('📈 Activity records seeded');
 
     // 10. Update statistics and relationships
     console.log('🔄 Updating relationships and statistics...');

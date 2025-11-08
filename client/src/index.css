@@ -80,25 +80,26 @@
 
 /* Dialog z-index fixes to ensure dialogs appear above all other elements */
 [data-radix-popper-content-wrapper] {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
 /* Ensure dialog overlays and content have proper stacking */
-[data-state="open"][data-radix-dialog-overlay] {
-  z-index: 9998 !important;
+[data-radix-dialog-overlay] {
+  z-index: 50000 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
-[data-state="open"][data-radix-dialog-content] {
-  z-index: 9999 !important;
+[data-radix-dialog-content] {
+  z-index: 50001 !important;
 }
 
 /* Fix for any conflicting z-index issues with other components */
 .dialog-content-high-priority {
-  z-index: 10000 !important;
+  z-index: 50001 !important;
 }
 
 .dialog-overlay-high-priority {
-  z-index: 9999 !important;
+  z-index: 50000 !important;
 }
 
 /* Custom scrollbar for question creation modal */

@@ -18,6 +18,8 @@ import { seedComprehensiveData } from "./data/comprehensiveSeedData.js";
 import seedStudentDashboard from "./data/seedStudents.js";
 // @ts-ignore
 import { seedHomepageData } from "./data/homepageSeedData.js";
+// @ts-ignore
+import { seedActivityData } from "./data/activitySeedData.js";
 
 const app = express();
 

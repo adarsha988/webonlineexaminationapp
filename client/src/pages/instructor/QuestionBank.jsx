@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,13 +17,15 @@ import {
   AlertCircle,
   Save,
   X,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { questionBankAPI } from '../../api/questionBank';
 
 const QuestionBank = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -31,7 +34,20 @@ const QuestionBank = () => {
     totalItems: 0
   });
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [newQuestion, setNewQuestion] = useState({
+    questionText: '',
+    type: 'mcq',
+    subject: '',
+    difficulty: 'medium',
+    marks: 1,
+    options: ['', '', '', ''],
+    correctAnswer: '',
+    tags: []
+  });
+  const [editQuestion, setEditQuestion] = useState({
     questionText: '',
     type: 'mcq',
     subject: '',
@@ -163,6 +179,87 @@ const QuestionBank = () => {
     }
   };
 
+  // Handle view question
+  const handleViewQuestion = (question) => {
+    setSelectedQuestion(question);
+    setShowViewModal(true);
+  };
+
+  // Handle edit question
+  const handleEditQuestion = (question) => {
+    setEditQuestion({
+      _id: question._id,
+      questionText: question.questionText,
+      type: question.type,
+      subject: question.subject,
+      difficulty: question.difficulty,
+      marks: question.marks,
+      options: question.options || ['', '', '', ''],
+      correctAnswer: question.correctAnswer || '',
+      tags: question.tags || []
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle update question
+  const handleUpdateQuestion = async () => {
+    if (!editQuestion.questionText.trim()) {
+      toast({
+        title: "Missing Question Text",
+        description: "Please enter the question text.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!editQuestion.subject.trim()) {
+      toast({
+        title: "Missing Subject",
+        description: "Please select a subject.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editQuestion.type === 'mcq' && 
+        (!editQuestion.correctAnswer || editQuestion.options.some(opt => !opt.trim()))) {
+      toast({
+        title: "Incomplete Multiple Choice",
+        description: "Please fill in all options and select the correct answer.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      await questionBankAPI.updateQuestion(editQuestion._id, {
+        questionText: editQuestion.questionText,
+        type: editQuestion.type,
+        subject: editQuestion.subject,
+        difficulty: editQuestion.difficulty,
+        marks: editQuestion.marks,
+        options: editQuestion.options,
+        correctAnswer: editQuestion.correctAnswer,
+        tags: editQuestion.tags
+      });
+      
+      toast({
+        title: "Question Updated",
+        description: "Question updated successfully."
+      });
+      
+      setShowEditModal(false);
+      fetchQuestions(); // Refresh questions list
+    } catch (error) {
+      console.error('Update error:', error);
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.message || error.message || "Failed to update question.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Handle option change for multiple choice questions
   const handleOptionChange = (index, value) => {
     const newOptions = [...newQuestion.options];
@@ -192,6 +289,35 @@ const QuestionBank = () => {
     }
   };
 
+  // Handle option change for edit modal
+  const handleEditOptionChange = (index, value) => {
+    const newOptions = [...editQuestion.options];
+    newOptions[index] = value;
+    setEditQuestion(prev => ({
+      ...prev,
+      options: newOptions
+    }));
+  };
+
+  // Add new option for edit modal
+  const addEditOption = () => {
+    setEditQuestion(prev => ({
+      ...prev,
+      options: [...prev.options, '']
+    }));
+  };
+
+  // Remove option for edit modal
+  const removeEditOption = (index) => {
+    if (editQuestion.options.length > 2) {
+      const newOptions = editQuestion.options.filter((_, i) => i !== index);
+      setEditQuestion(prev => ({
+        ...prev,
+        options: newOptions
+      }));
+    }
+  };
+
   useEffect(() => {
     fetchQuestions();
   }, []);
@@ -209,146 +335,178 @@ const QuestionBank = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Question Bank</h1>
-          <p className="text-gray-600 mt-1">Create and manage your questions</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/instructor/dashboard')}
+            className="flex items-center gap-2 hover:bg-gray-100"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Question Bank</h1>
+            <p className="text-gray-600 mt-1">Create and manage your questions</p>
+          </div>
         </div>
         <div className="flex gap-3">
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
+              <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                <Plus className="w-5 h-5" />
                 New Question
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden dialog-content-high-priority flex flex-col p-0 bg-white z-[1000]">
-
-              <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-                <DialogTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Plus className="w-6 h-6 text-white" />
+            <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col p-0 bg-white border-2 border-blue-200 shadow-2xl">
+              {/* Modern Header with Icon */}
+              <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b-2 border-blue-200">
+                <DialogHeader className="px-8 pt-8 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                      <FileText className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <DialogTitle className="text-3xl font-bold text-gray-900 mb-2">
+                        Create New Question
+                      </DialogTitle>
+                      <DialogDescription className="text-base text-gray-600">
+                        Build your question bank with detailed assessments
+                      </DialogDescription>
+                    </div>
                   </div>
-                  Create New Question
-                </DialogTitle>
-                <DialogDescription className="text-sm text-gray-600 mt-2">
-                  Fill in the details below to add a new question to your bank
-                </DialogDescription>
-              </DialogHeader>
+                </DialogHeader>
+              </div>
               
-              <div className="space-y-5 overflow-y-auto flex-1 px-6 py-4 custom-scrollbar">
-                {/* Question Text */}
-                <div className="space-y-2 p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                  <Label htmlFor="questionText" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    Question Text *
+              {/* Scrollable Content Area */}
+              <div className="overflow-y-auto flex-1 px-8 py-6 space-y-6 bg-gradient-to-br from-slate-50 to-blue-50">
+                {/* Question Text Section */}
+                <div className="group">
+                  <Label className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">1</div>
+                    Question Text
+                    <span className="text-red-500">*</span>
                   </Label>
-                  <Textarea
-                    id="questionText"
-                    value={newQuestion.questionText}
-                    onChange={(e) => setNewQuestion(prev => ({ ...prev, questionText: e.target.value }))}
-                    placeholder="Enter your question here... (e.g., What is the capital of France?)" 
-                    rows={4}
-                    className="mt-1 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                </div>
-
-                {/* Subject and Type Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                    <Label htmlFor="subject" className="text-sm font-semibold text-gray-700">Subject *</Label>
-                    <Select value={newQuestion.subject} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, subject: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mathematics">Mathematics</SelectItem>
-                        <SelectItem value="science">Science</SelectItem>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="history">History</SelectItem>
-                        <SelectItem value="physics">Physics</SelectItem>
-                        <SelectItem value="chemistry">Chemistry</SelectItem>
-                        <SelectItem value="biology">Biology</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2 p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                    <Label htmlFor="type" className="text-sm font-semibold text-gray-700">Question Type</Label>
-                    <Select value={newQuestion.type} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, type: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mcq">Multiple Choice</SelectItem>
-                        <SelectItem value="truefalse">True/False</SelectItem>
-                        <SelectItem value="short">Short Answer</SelectItem>
-                        <SelectItem value="long">Essay</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Difficulty and Marks Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                    <Label htmlFor="difficulty" className="text-sm font-semibold text-gray-700">Difficulty</Label>
-                    <Select value={newQuestion.difficulty} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, difficulty: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2 p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
-                    <Label htmlFor="marks" className="text-sm font-semibold text-gray-700">Marks</Label>
-                    <Input
-                      id="marks"
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={newQuestion.marks}
-                      onChange={(e) => setNewQuestion(prev => ({ ...prev, marks: parseInt(e.target.value) || 1 }))}
-                      className="mt-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  <div className="relative">
+                    <Textarea
+                      value={newQuestion.questionText}
+                      onChange={(e) => setNewQuestion(prev => ({ ...prev, questionText: e.target.value }))}
+                      placeholder="Enter your question here... e.g., What is the capital of France?"
+                      rows={4}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 resize-none bg-white shadow-sm hover:shadow-md"
                     />
                   </div>
                 </div>
 
-                {/* Options for Multiple Choice */}
-                {newQuestion.type === 'mcq' && (
-                  <div className="space-y-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">?</span>
-                      </div>
-                      <Label className="text-sm font-bold text-gray-800">Answer Options *</Label>
+                {/* Configuration Grid */}
+                <div className="space-y-4">
+                  <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">2</div>
+                    Question Configuration
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Subject */}
+                    <div className="relative">
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase tracking-wide">Subject <span className="text-red-500">*</span></Label>
+                      <Select value={newQuestion.subject} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, subject: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white shadow-sm">
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="mathematics" className="cursor-pointer">Mathematics</SelectItem>
+                          <SelectItem value="science" className="cursor-pointer"> Science</SelectItem>
+                          <SelectItem value="english" className="cursor-pointer">English</SelectItem>
+                          <SelectItem value="history" className="cursor-pointer">History</SelectItem>
+                          <SelectItem value="physics" className="cursor-pointer">Physics</SelectItem>
+                          <SelectItem value="chemistry" className="cursor-pointer">Chemistry</SelectItem>
+                          <SelectItem value="biology" className="cursor-pointer"> Biology</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+
+                    {/* Type */}
+                    <div className="relative">
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase tracking-wide">Question Type</Label>
+                      <Select value={newQuestion.type} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, type: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="mcq" className="cursor-pointer">Multiple Choice</SelectItem>
+                          <SelectItem value="truefalse" className="cursor-pointer">True/False</SelectItem>
+                          <SelectItem value="short" className="cursor-pointer">Short Answer</SelectItem>
+                          <SelectItem value="long" className="cursor-pointer">Essay</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Difficulty */}
+                    <div className="relative">
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase tracking-wide">Difficulty Level</Label>
+                      <Select value={newQuestion.difficulty} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, difficulty: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="easy" className="cursor-pointer">Easy</SelectItem>
+                          <SelectItem value="medium" className="cursor-pointer"> Medium</SelectItem>
+                          <SelectItem value="hard" className="cursor-pointer">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Marks */}
+                    <div className="relative">
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase tracking-wide">Points</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={newQuestion.marks}
+                        onChange={(e) => setNewQuestion(prev => ({ ...prev, marks: parseInt(e.target.value) || 1 }))}
+                        className="h-12 border-2 border-gray-200 rounded-xl hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white shadow-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* MCQ Options */}
+                {newQuestion.type === 'mcq' && (
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-inner">
+                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">3</div>
+                      Answer Options
+                      <span className="text-red-500">*</span>
+                    </Label>
                     <div className="space-y-3">
                       {newQuestion.options.map((option, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-all shadow-sm hover:shadow-md">
-                          <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full font-bold text-base shadow-md">
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex items-center gap-3 bg-white p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200"
+                        >
+                          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg shadow-md">
                             {String.fromCharCode(65 + index)}
-                          </span>
+                          </div>
                           <Input
                             value={option}
                             onChange={(e) => handleOptionChange(index, e.target.value)}
-                            placeholder={`Enter option ${String.fromCharCode(65 + index)}`}
-                            className="flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all border-gray-300"
+                            placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                            className="flex-1 h-11 border-0 focus:ring-2 focus:ring-blue-500 rounded-lg bg-gray-50"
                           />
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={() => setNewQuestion(prev => ({ ...prev, correctAnswer: option }))}
-                            className={newQuestion.correctAnswer === option 
-                              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 border-green-500 shadow-md min-w-[110px]' 
-                              : 'hover:bg-blue-50 hover:border-blue-400 min-w-[110px]'}
+                            className={`min-w-[120px] h-11 rounded-lg font-semibold transition-all duration-200 ${
+                              newQuestion.correctAnswer === option
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-500 hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                                : 'bg-white hover:bg-blue-50 hover:border-blue-400'
+                            }`}
                           >
-                            {newQuestion.correctAnswer === option ? '✓ Correct' : 'Mark Correct'}
+                            {newQuestion.correctAnswer === option ? '✓ Correct' : 'Set Correct'}
                           </Button>
                           {newQuestion.options.length > 2 && (
                             <Button
@@ -356,19 +514,18 @@ const QuestionBank = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => removeOption(index)}
-                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-400 transition-all"
+                              className="h-11 w-11 p-0 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-400 transition-all"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-5 w-5" />
                             </Button>
                           )}
-                        </div>
+                        </motion.div>
                       ))}
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
                         onClick={addOption}
-                        className="w-full border-dashed border-2 border-blue-300 hover:bg-blue-50 hover:border-blue-500 transition-all py-3 text-blue-700 font-semibold"
+                        className="w-full h-12 border-2 border-dashed border-blue-400 rounded-xl hover:bg-blue-50 hover:border-blue-600 transition-all text-blue-600 font-semibold"
                       >
                         <Plus className="h-5 w-5 mr-2" />
                         Add Another Option
@@ -377,38 +534,338 @@ const QuestionBank = () => {
                   </div>
                 )}
 
-                {/* Correct Answer for True/False */}
+                {/* True/False */}
                 {newQuestion.type === 'truefalse' && (
-                  <div className="space-y-3 p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-sm">
-                    <Label className="text-sm font-bold text-gray-800">Correct Answer *</Label>
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 shadow-inner">
+                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold">3</div>
+                      Correct Answer
+                      <span className="text-red-500">*</span>
+                    </Label>
                     <Select value={newQuestion.correctAnswer} onValueChange={(value) => setNewQuestion(prev => ({ ...prev, correctAnswer: value }))}>
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl hover:border-green-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all bg-white shadow-sm">
                         <SelectValue placeholder="Select correct answer" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="True">True</SelectItem>
-                        <SelectItem value="False">False</SelectItem>
+                      <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                        <SelectItem value="True" className="cursor-pointer">✓ True</SelectItem>
+                        <SelectItem value="False" className="cursor-pointer">✗ False</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 )}
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-5 border-t-2 mt-6 flex-shrink-0 sticky bottom-0 bg-gradient-to-r from-gray-50 to-white px-6 pb-4 shadow-lg">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCreateModal(false)}
-                    className="min-w-[100px]"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleCreateQuestion}
-                    className="min-w-[150px] bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    Create Question
-                  </Button>
+              {/* Modern Footer with Actions */}
+              <div className="flex-shrink-0 px-8 py-6 bg-white border-t-2 border-blue-200">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Required fields
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCreateModal(false)}
+                      className="px-6 h-12 rounded-xl border-2 hover:bg-gray-50 transition-all font-semibold"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateQuestion}
+                      className="px-8 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                    >
+                      <Save className="h-5 w-5 mr-2" />
+                      Create Question
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Question Dialog */}
+          <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-2 border-blue-200 shadow-2xl">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <Eye className="w-6 h-6 text-blue-600" />
+                  View Question
+                </DialogTitle>
+              </DialogHeader>
+              
+              {selectedQuestion && (
+                <div className="space-y-6 py-6">
+                  {/* Question Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-600">Question</Label>
+                      <p className="mt-2 text-lg text-gray-900 bg-gray-50 p-4 rounded-lg border">{selectedQuestion.questionText}</p>
+                    </div>
+
+                    {/* Meta Information */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600">Subject</Label>
+                        <Badge variant="outline" className="mt-2">{selectedQuestion.subject}</Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600">Type</Label>
+                        <Badge variant="secondary" className="mt-2">{selectedQuestion.type}</Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600">Difficulty</Label>
+                        <Badge className={`mt-2 ${getDifficultyColor(selectedQuestion.difficulty)}`}>{selectedQuestion.difficulty}</Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600">Marks</Label>
+                        <p className="mt-2 text-lg font-bold text-blue-600">{selectedQuestion.marks}</p>
+                      </div>
+                    </div>
+
+                    {/* Options for MCQ */}
+                    {selectedQuestion.type === 'mcq' && selectedQuestion.options && (
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600 mb-3 block">Answer Options</Label>
+                        <div className="space-y-2">
+                          {selectedQuestion.options.map((option, index) => (
+                            <div
+                              key={index}
+                              className={`p-3 rounded-lg border-2 flex items-center gap-3 ${
+                                option === selectedQuestion.correctAnswer
+                                  ? 'bg-green-50 border-green-500'
+                                  : 'bg-gray-50 border-gray-200'
+                              }`}
+                            >
+                              <span className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full font-bold">
+                                {String.fromCharCode(65 + index)}
+                              </span>
+                              <span className="flex-1 text-gray-900">{option}</span>
+                              {option === selectedQuestion.correctAnswer && (
+                                <Badge className="bg-green-500">✓ Correct</Badge>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* True/False Answer */}
+                    {selectedQuestion.type === 'truefalse' && (
+                      <div>
+                        <Label className="text-sm font-semibold text-gray-600">Correct Answer</Label>
+                        <Badge className="mt-2 bg-green-500 text-white">{selectedQuestion.correctAnswer}</Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end pt-4 border-t">
+                <Button onClick={() => setShowViewModal(false)} className="px-6">
+                  Close
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Question Dialog */}
+          <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+            <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col p-0 bg-white border-2 border-indigo-200 shadow-2xl">
+              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border-b-2 border-indigo-200">
+                <DialogHeader className="px-8 pt-8 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <Edit className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <DialogTitle className="text-3xl font-bold text-gray-900 mb-2">
+                        Edit Question
+                      </DialogTitle>
+                      <DialogDescription className="text-base text-gray-600">
+                        Update your question details
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+              </div>
+              
+              <div className="overflow-y-auto flex-1 px-8 py-6 space-y-6 bg-gradient-to-br from-slate-50 to-indigo-50">
+                <div className="group">
+                  <Label className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">1</div>
+                    Question Text
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    value={editQuestion.questionText}
+                    onChange={(e) => setEditQuestion(prev => ({ ...prev, questionText: e.target.value }))}
+                    placeholder="Enter your question here..."
+                    rows={4}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 resize-none bg-white shadow-sm"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">2</div>
+                    Configuration
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase">Subject *</Label>
+                      <Select value={editQuestion.subject} onValueChange={(value) => setEditQuestion(prev => ({ ...prev, subject: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl">
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="mathematics">Mathematics</SelectItem>
+                          <SelectItem value="science">Science</SelectItem>
+                          <SelectItem value="english">English</SelectItem>
+                          <SelectItem value="history">History</SelectItem>
+                          <SelectItem value="physics">Physics</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="biology">Biology</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase">Type</Label>
+                      <Select value={editQuestion.type} onValueChange={(value) => setEditQuestion(prev => ({ ...prev, type: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="mcq">Multiple Choice</SelectItem>
+                          <SelectItem value="truefalse">True/False</SelectItem>
+                          <SelectItem value="short">Short Answer</SelectItem>
+                          <SelectItem value="long">Essay</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase">Difficulty</Label>
+                      <Select value={editQuestion.difficulty} onValueChange={(value) => setEditQuestion(prev => ({ ...prev, difficulty: value }))}>
+                        <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                          <SelectItem value="easy">Easy</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-600 mb-1.5 block uppercase">Points</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={editQuestion.marks}
+                        onChange={(e) => setEditQuestion(prev => ({ ...prev, marks: parseInt(e.target.value) || 1 }))}
+                        className="h-12 border-2 border-gray-200 rounded-xl"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {editQuestion.type === 'mcq' && (
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200">
+                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">3</div>
+                      Answer Options *
+                    </Label>
+                    <div className="space-y-3">
+                      {editQuestion.options.map((option, index) => (
+                        <div key={index} className="flex items-center gap-3 bg-white p-4 rounded-xl border-2 border-gray-200">
+                          <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-lg">
+                            {String.fromCharCode(65 + index)}
+                          </div>
+                          <Input
+                            value={option}
+                            onChange={(e) => handleEditOptionChange(index, e.target.value)}
+                            placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                            className="flex-1 h-11"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setEditQuestion(prev => ({ ...prev, correctAnswer: option }))}
+                            className={`min-w-[120px] h-11 rounded-lg ${
+                              editQuestion.correctAnswer === option
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                                : 'bg-white'
+                            }`}
+                          >
+                            {editQuestion.correctAnswer === option ? '✓ Correct' : 'Set Correct'}
+                          </Button>
+                          {editQuestion.options.length > 2 && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => removeEditOption(index)}
+                              className="h-11 w-11 hover:bg-red-50 hover:text-red-600"
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addEditOption}
+                        className="w-full h-12 border-2 border-dashed border-indigo-400 rounded-xl"
+                      >
+                        <Plus className="h-5 w-5 mr-2" />
+                        Add Option
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {editQuestion.type === 'truefalse' && (
+                  <div className="space-y-4 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
+                    <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold">3</div>
+                      Correct Answer *
+                    </Label>
+                    <Select value={editQuestion.correctAnswer} onValueChange={(value) => setEditQuestion(prev => ({ ...prev, correctAnswer: value }))}>
+                      <SelectTrigger className="h-12 border-2 border-gray-200 rounded-xl">
+                        <SelectValue placeholder="Select correct answer" />
+                      </SelectTrigger>
+                      <SelectContent className="!z-[99999]" position="popper" sideOffset={5}>
+                        <SelectItem value="True">✓ True</SelectItem>
+                        <SelectItem value="False">✗ False</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-shrink-0 px-8 py-6 bg-white border-t-2 border-indigo-200">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Required fields
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowEditModal(false)}
+                      className="px-6 h-12 rounded-xl border-2"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUpdateQuestion}
+                      className="px-8 h-12 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
+                    >
+                      <Save className="h-5 w-5 mr-2" />
+                      Update Question
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DialogContent>
@@ -471,16 +928,26 @@ const QuestionBank = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleViewQuestion(question)}
+                          className="hover:bg-blue-50 hover:text-blue-600"
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditQuestion(question)}
+                          className="hover:bg-indigo-50 hover:text-indigo-600"
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-red-600 hover:text-red-700"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleDeleteQuestion(question._id)}
                         >
                           <Trash2 className="w-4 h-4" />

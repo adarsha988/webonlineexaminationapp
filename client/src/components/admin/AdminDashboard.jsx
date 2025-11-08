@@ -6,13 +6,11 @@ import {
   GraduationCap, 
   BookOpen, 
   Activity, 
-  TrendingUp, 
   Server,
   Plus,
   Download,
   Settings,
   Bell,
-  Search,
   LogOut,
   User
 } from 'lucide-react';
@@ -23,7 +21,6 @@ import { logoutUser } from '../../store/authSlice';
 import DashboardStats from './DashboardStats';
 import RecentActivity from './RecentActivity';
 import UserManagement from './UserManagement';
-import ReportsSection from './ReportsSection';
 import AddUserModal from './AddUserModal';
 import NotificationBell from './NotificationBell';
 import LogoutModal from '../LogoutModal';
@@ -31,7 +28,6 @@ import LogoutModal from '../LogoutModal';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { toast } = useToast();
   const dispatch = useDispatch();
@@ -39,7 +35,6 @@ const AdminDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'users', label: 'User Management', icon: Users },
-    { id: 'reports', label: 'Reports & Analytics', icon: TrendingUp },
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
@@ -91,23 +86,6 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Search */}
-              <div className="relative hidden lg:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48"
-                />
-              </div>
-              
-              {/* Mobile Search Button */}
-              <Button variant="ghost" size="sm" className="lg:hidden">
-                <Search className="h-4 w-4" />
-              </Button>
-              
               {/* Action Buttons */}
               <Button
                 onClick={() => setShowAddUserModal(true)}
@@ -250,16 +228,6 @@ const AdminDashboard = () => {
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
-                          onClick={() => setActiveTab('reports')}
-                          className="h-16 sm:h-20 flex-col w-full"
-                          variant="outline"
-                        >
-                          <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
-                          <span className="text-xs sm:text-sm">Reports</span>
-                        </Button>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
                           onClick={() => handleExportData('csv')}
                           className="h-16 sm:h-20 flex-col w-full"
                           variant="outline"
@@ -280,45 +248,13 @@ const AdminDashboard = () => {
                       </motion.div>
                     </div>
                   </div>
-
-                  <div className="bg-white rounded-lg shadow-sm border p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Server Status</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="text-sm font-medium text-green-600">Online</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Database</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="text-sm font-medium text-green-600">Connected</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Last Backup</span>
-                        <span className="text-sm font-medium text-gray-900">2 hours ago</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Active Sessions</span>
-                        <span className="text-sm font-medium text-gray-900">24</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'users' && (
-            <UserManagement searchQuery={searchQuery} />
-          )}
-
-          {activeTab === 'reports' && (
-            <ReportsSection />
+            <UserManagement />
           )}
 
           {activeTab === 'settings' && (

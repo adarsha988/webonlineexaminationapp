@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Clock, 
   BookOpen, 
@@ -12,14 +12,22 @@ import {
   Eye,
   Award,
   Target,
-  BarChart3
+  BarChart3,
+  Sparkles,
+  Zap,
+  Star,
+  Activity,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/useToast';
-import { studentExamAPI, studentNotificationsAPI } from '@/api/studentExams';
+import { studentExamAPI, studentNotificationsAPI, studentAnalyticsAPI } from '@/api/studentExams';
 import NotificationDropdown from '@/components/student/NotificationDropdown';
 import ExamCard from '@/components/student/ExamCard';
 import StudentLayout from '@/layouts/StudentLayout';
@@ -241,18 +249,24 @@ const StudentDashboard = () => {
     );
   }
 
+  // Calculate statistics
+  const totalExams = upcomingExams.length + ongoingExams.length + completedExams.length;
+  const averageScore = completedExams.length > 0 
+    ? Math.round(completedExams.reduce((sum, exam) => sum + (exam.percentage || 0), 0) / completedExams.length)
+    : 0;
+
   if (loading) {
     console.log('📊 Showing loading state');
     return (
       <StudentLayout>
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
+                <Card key={i} className="animate-pulse border-none shadow-xl">
                   <CardContent className="p-6">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-8 bg-gradient-to-r from-gray-300 to-gray-200 rounded w-1/2"></div>
                   </CardContent>
                 </Card>
               ))}
@@ -265,198 +279,583 @@ const StudentDashboard = () => {
 
   return (
     <StudentLayout>
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.name}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Here's what's happening with your exams today.
-              </p>
+          {/* Animated Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
+          >
+            <div className="relative">
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome back, {user?.name}! ✨
+                </h1>
+                <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                  Here's what's happening with your exams today.
+                </p>
+              </motion.div>
+              <motion.div
+                className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-3xl opacity-20"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.3, 0.2]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
             </div>
             <NotificationDropdown 
               notifications={notifications}
               unreadCount={unreadCount}
               onMarkAsRead={handleMarkAsRead}
             />
-          </div>
+          </motion.div>
+
+          {/* Animated Stats Cards */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8"
+          >
+            {/* Total Exams Card */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card className="border-none shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative">
+                <motion.div
+                  className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                />
+                <CardContent className="p-6 relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <BookOpen className="h-8 w-8 opacity-80" />
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Sparkles className="h-5 w-5" />
+                    </motion.div>
+                  </div>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-sm opacity-90 mb-1"
+                  >
+                    Total Exams
+                  </motion.p>
+                  <motion.p 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.4 }}
+                    className="text-4xl font-bold"
+                  >
+                    {totalExams}
+                  </motion.p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Completed Exams Card */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card className="border-none shadow-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white overflow-hidden relative">
+                <motion.div
+                  className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 -mb-16"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+                <CardContent className="p-6 relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <CheckCircle2 className="h-8 w-8 opacity-80" />
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <Star className="h-5 w-5" />
+                    </motion.div>
+                  </div>
+                  <p className="text-sm opacity-90 mb-1">Completed</p>
+                  <p className="text-4xl font-bold">{completedExams.length}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Average Score Card */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card className="border-none shadow-xl bg-gradient-to-br from-purple-500 to-pink-600 text-white overflow-hidden relative">
+                <motion.div
+                  className="absolute top-0 left-0 w-40 h-40 bg-white/10 rounded-full -ml-20 -mt-20"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                />
+                <CardContent className="p-6 relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingUp className="h-8 w-8 opacity-80" />
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Zap className="h-5 w-5" />
+                    </motion.div>
+                  </div>
+                  <p className="text-sm opacity-90 mb-1">Average Score</p>
+                  <p className="text-4xl font-bold">{averageScore}%</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Upcoming Exams Card */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Card className="border-none shadow-xl bg-gradient-to-br from-orange-500 to-red-600 text-white overflow-hidden relative">
+                <motion.div
+                  className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mb-16"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                <CardContent className="p-6 relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Calendar className="h-8 w-8 opacity-80" />
+                    <motion.div
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Activity className="h-5 w-5" />
+                    </motion.div>
+                  </div>
+                  <p className="text-sm opacity-90 mb-1">Upcoming</p>
+                  <p className="text-4xl font-bold">{upcomingExams.length}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
 
           {/* Dashboard Content */}
           <Tabs defaultValue="exams" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="exams">Exams</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            </TabsList>
-
-          <TabsContent value="exams" className="space-y-6">
-            {/* Ongoing Exams */}
-            {ongoingExams.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-yellow-500" />
-                  Ongoing Exams
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {ongoingExams.map((exam) => (
-                    <Card key={exam._id} className="border-yellow-200 bg-yellow-50">
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{exam.title}</CardTitle>
-                            <CardDescription>{exam.subject}</CardDescription>
-                          </div>
-                          <Badge variant="default" className="bg-yellow-500">
-                            In Progress
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="text-sm text-gray-600">
-                            {formatTimeRemaining(exam.timeRemaining)}
-                          </div>
-                          <Button 
-                            onClick={() => handleResumeExam(exam._id)}
-                            className="w-full"
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Resume Exam
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Upcoming Exams */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-500" />
-                Upcoming Exams
-              </h2>
-              {upcomingExams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {upcomingExams.map((exam) => (
-                    <ExamCard
-                      key={exam._id}
-                      exam={exam}
-                      onStart={handleStartExam}
-                      type="upcoming"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No upcoming exams</p>
-                  </CardContent>
-                </Card>
-              )}
+              <TabsList className="bg-white/80 backdrop-blur-sm shadow-lg border-none">
+                <TabsTrigger value="exams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">📚 Exams</TabsTrigger>
+                <TabsTrigger value="notifications" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">🔔 Notifications</TabsTrigger>
+              </TabsList>
             </motion.div>
 
-            {/* Recent Completed Exams */}
+          <TabsContent value="exams" className="space-y-6 sm:space-y-8">
+            {/* Ongoing Exams with Pulse Animation */}
+            <AnimatePresence>
+              {ongoingExams.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-4"
+                >
+                  <motion.div
+                    initial={{ x: -20 }}
+                    animate={{ x: 0 }}
+                    className="flex items-center gap-3"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="relative"
+                    >
+                      <Clock className="h-6 w-6 text-yellow-500" />
+                      <motion.div
+                        className="absolute inset-0 bg-yellow-500 rounded-full blur-md"
+                        animate={{ opacity: [0.5, 0, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </motion.div>
+                    <h2 className="text-2xl font-bold text-gray-900">Ongoing Exams</h2>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Zap className="h-5 w-5 text-yellow-500" />
+                    </motion.div>
+                  </motion.div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {ongoingExams.map((exam, index) => (
+                      <motion.div
+                        key={exam._id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.03, y: -8 }}
+                      >
+                        <Card className="border-none shadow-2xl bg-gradient-to-br from-yellow-50 to-orange-50 overflow-hidden relative group">
+                          <motion.div
+                            className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"
+                          />
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-orange-500/10"
+                            animate={{ opacity: [0.1, 0.2, 0.1] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                          />
+                          <CardHeader className="pb-3 relative z-10">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <CardTitle className="text-lg font-bold text-gray-900">{exam.title}</CardTitle>
+                                <CardDescription className="text-gray-600 mt-1">{exam.subject}</CardDescription>
+                              </div>
+                              <motion.div
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                              >
+                                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none shadow-lg">
+                                  🔥 Active
+                                </Badge>
+                              </motion.div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="relative z-10">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+                                <AlertCircle className="h-4 w-4 text-orange-500" />
+                                {formatTimeRemaining(exam.timeRemaining)}
+                              </div>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <Button 
+                                  onClick={() => handleResumeExam(exam._id)}
+                                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                                >
+                                  <Play className="h-4 w-4 mr-2" />
+                                  Resume Exam
+                                  <ArrowRight className="h-4 w-4 ml-2" />
+                                </Button>
+                              </motion.div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Upcoming Exams with Animated Cards */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Recent Results
-                </h2>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/student/exams/completed')}
+              <motion.div
+                initial={{ x: -20 }}
+                animate={{ x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-3"
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="relative"
                 >
-                  View All
-                </Button>
-              </div>
-              {completedExams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {completedExams.map((exam) => (
-                    <ExamCard
+                  <Calendar className="h-6 w-6 text-blue-500" />
+                  <motion.div
+                    className="absolute inset-0 bg-blue-500 rounded-full blur-md"
+                    animate={{ opacity: [0, 0.3, 0] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                </motion.div>
+                <h2 className="text-2xl font-bold text-gray-900">Upcoming Exams</h2>
+                <Badge className="bg-blue-500 text-white">{upcomingExams.length}</Badge>
+              </motion.div>
+              {upcomingExams.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {upcomingExams.map((exam, index) => (
+                    <motion.div
                       key={exam._id}
-                      exam={exam}
-                      onViewResult={handleViewResult}
-                      type="completed"
-                    />
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index, type: "spring" }}
+                      whileHover={{ scale: 1.03, y: -5 }}
+                    >
+                      <ExamCard
+                        exam={exam}
+                        onStart={handleStartExam}
+                        type="upcoming"
+                      />
+                    </motion.div>
                   ))}
                 </div>
               ) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No completed exams yet</p>
-                  </CardContent>
-                </Card>
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                >
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="text-center py-12">
+                      <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      </motion.div>
+                      <p className="text-gray-500 font-medium">No upcoming exams</p>
+                      <p className="text-gray-400 text-sm mt-2">Check back later for new exams</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Recent Completed Exams with Results */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <motion.div
+                  initial={{ x: -20 }}
+                  animate={{ x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center gap-3"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="relative"
+                  >
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    <motion.div
+                      className="absolute inset-0 bg-green-500 rounded-full blur-md"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  </motion.div>
+                  <h2 className="text-2xl font-bold text-gray-900">Recent Results</h2>
+                  <Badge className="bg-green-500 text-white">{completedExams.length}</Badge>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/student/exams/completed')}
+                    className="border-2 border-green-500 text-green-600 hover:bg-green-50 font-semibold"
+                  >
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </div>
+              {completedExams.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {completedExams.map((exam, index) => (
+                    <motion.div
+                      key={exam._id}
+                      initial={{ opacity: 0, scale: 0.8, rotateY: 90 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      transition={{ delay: 0.1 * index, type: "spring", stiffness: 100 }}
+                      whileHover={{ scale: 1.03, y: -5 }}
+                    >
+                      <ExamCard
+                        exam={exam}
+                        onViewResult={handleViewResult}
+                        type="completed"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                >
+                  <Card className="border-none shadow-lg">
+                    <CardContent className="text-center py-12">
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                      >
+                        <CheckCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      </motion.div>
+                      <p className="text-gray-500 font-medium">No completed exams yet</p>
+                      <p className="text-gray-400 text-sm mt-2">Complete exams to see your results here</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )}
             </motion.div>
           </TabsContent>
 
 
-          <TabsContent value="notifications">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-semibold text-gray-900">Notifications</h2>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/student/notifications')}
+          <TabsContent value="notifications" className="space-y-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <motion.div
+                  initial={{ x: -20 }}
+                  animate={{ x: 0 }}
+                  className="flex items-center gap-3"
                 >
-                  View All
-                </Button>
+                  <motion.div
+                    animate={{ rotate: [0, -15, 15, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="relative"
+                  >
+                    <Bell className="h-6 w-6 text-purple-500" />
+                    {unreadCount > 0 && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center"
+                      >
+                        <span className="text-white text-xs font-bold">{unreadCount}</span>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                  <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
+                  {unreadCount > 0 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring" }}
+                    >
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">{ unreadCount} New</Badge>
+                    </motion.div>
+                  )}
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/student/notifications')}
+                    className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50 font-semibold"
+                  >
+                    View All
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </motion.div>
               </div>
               
-              {notifications.length > 0 ? (
-                <div className="space-y-3">
-                  {notifications.map((notification) => (
-                    <Card key={notification._id} className={!notification.isRead ? 'border-blue-200 bg-blue-50' : ''}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                            <p className="text-xs text-gray-400 mt-2">
-                              {new Date(notification.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
+              <AnimatePresence>
+                {notifications.length > 0 ? (
+                  <div className="space-y-3">
+                    {notifications.map((notification, index) => (
+                      <motion.div
+                        key={notification._id}
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        transition={{ delay: index * 0.05 }}
+                        whileHover={{ scale: 1.02, x: 5 }}
+                      >
+                        <Card className={`border-none shadow-lg overflow-hidden relative ${
+                          !notification.isRead 
+                            ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-l-blue-500' 
+                            : 'bg-white'
+                        }`}>
                           {!notification.isRead && (
-                            <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10"
+                              animate={{ opacity: [0.1, 0.2, 0.1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
                           )}
-                        </div>
+                          <CardContent className="p-4 sm:p-5 relative z-10">
+                            <div className="flex items-start gap-4">
+                              <motion.div
+                                animate={!notification.isRead ? { scale: [1, 1.2, 1] } : {}}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="shrink-0 mt-1"
+                              >
+                                {!notification.isRead ? (
+                                  <div className="h-3 w-3 bg-blue-500 rounded-full shadow-lg" />
+                                ) : (
+                                  <div className="h-3 w-3 bg-gray-300 rounded-full" />
+                                )}
+                              </motion.div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 mb-1">{notification.title}</h4>
+                                <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+                                <div className="flex items-center gap-3 text-xs text-gray-400">
+                                  <Clock className="h-3 w-3" />
+                                  <span>
+                                    {new Date(notification.createdAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                              {!notification.isRead && (
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleMarkAsRead(notification._id)}
+                                  className="shrink-0 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-full font-medium transition-colors"
+                                >
+                                  Mark Read
+                                </motion.button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                  >
+                    <Card className="border-none shadow-lg">
+                      <CardContent className="text-center py-16">
+                        <motion.div
+                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                        >
+                          <Bell className="h-20 w-20 text-gray-300 mx-auto mb-4" />
+                        </motion.div>
+                        <p className="text-gray-500 font-medium text-lg">No notifications</p>
+                        <p className="text-gray-400 text-sm mt-2">You're all caught up! 🎉</p>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No notifications</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
     </StudentLayout>
   );
 };

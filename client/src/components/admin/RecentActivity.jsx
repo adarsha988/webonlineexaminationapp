@@ -5,20 +5,21 @@ import {
   User, 
   FileText, 
   AlertTriangle, 
-  CheckCircle, 
   Clock,
-  Eye,
-  Users,
+  Trash2,
   BookOpen
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/useToast';
 
 const RecentActivity = () => {
+  const { toast } = useToast();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchActivities();
@@ -38,6 +39,50 @@ const RecentActivity = () => {
       console.error('Error fetching activities:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAllActivities = async () => {
+    if (!confirm('Are you sure you want to delete all activities? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      const response = await fetch('/api/recent-activities', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setActivities([]);
+        toast({
+          title: "Success",
+          description: `All activities deleted successfully. ${data.deletedCount} records removed.`,
+          variant: "default"
+        });
+      } else {
+        console.error('Failed to delete activities:', data);
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete activities. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting activities:', error);
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting activities. Please check your connection.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -115,10 +160,12 @@ const RecentActivity = () => {
     return (
       <Card className="h-full">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <ActivityIcon className="h-5 w-5 text-blue-600" />
-            Recent Activity
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+              <ActivityIcon className="h-5 w-5 text-blue-600" />
+              Recent Activity
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -146,10 +193,24 @@ const RecentActivity = () => {
   return (
     <Card className="h-full">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <ActivityIcon className="h-5 w-5 text-blue-600" />
-          Recent Activity
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+            <ActivityIcon className="h-5 w-5 text-blue-600" />
+            Recent Activity
+          </CardTitle>
+          {activities.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteAllActivities}
+              disabled={deleting}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? 'Deleting...' : 'Delete All'}
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
@@ -177,10 +238,7 @@ const RecentActivity = () => {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.02, backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
-                    className="flex items-center space-x-4 p-3 rounded-lg border border-gray-100 hover:border-blue-200 transition-all duration-200 cursor-pointer"
-                    onClick={() => {
-                      console.log('Navigate to activity:', activity);
-                    }}
+                    className="flex items-center space-x-4 p-3 rounded-lg border border-gray-100 hover:border-blue-200 transition-all duration-200"
                   >
                     <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${colors.bg}`}>
                       <IconComponent className={`h-5 w-5 ${colors.text}`} />
@@ -212,20 +270,6 @@ const RecentActivity = () => {
                           </>
                         )}
                       </div>
-                    </div>
-
-                    <div className="flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('View activity details:', activity);
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
                     </div>
                   </motion.div>
                 );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as blazeface from '@tensorflow-models/blazeface';
 import '@tensorflow/tfjs';
+import { motion } from 'framer-motion';
 import { 
   Camera, 
   Eye, 
@@ -23,6 +24,7 @@ const AIProctoringMonitor = ({ examId, studentId, sessionId, onViolation }) => {
   
   const [model, setModel] = useState(null);
   const [violations, setViolations] = useState([]);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [warningTimers, setWarningTimers] = useState({
     noFace: null,
     multipleFaces: null,
@@ -214,6 +216,11 @@ const AIProctoringMonitor = ({ examId, studentId, sessionId, onViolation }) => {
   };
 
   const checkGazeDirection = (face) => {
+    // Check if video ref is still valid
+    if (!videoRef.current || !videoRef.current.videoWidth || !videoRef.current.videoHeight) {
+      return;
+    }
+    
     // Simple heuristic: if face is too far from center, mark as looking away
     const videoWidth = videoRef.current.videoWidth;
     const videoHeight = videoRef.current.videoHeight;
@@ -328,83 +335,155 @@ const AIProctoringMonitor = ({ examId, studentId, sessionId, onViolation }) => {
   };
 
   return (
-    <div className="fixed top-20 right-4 z-40 w-80">
-      <div className={`border rounded-lg shadow-lg p-4 ${getStatusColor()} transition-colors duration-300`}>
-        {/* Status Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            <span className="font-semibold">AI Proctoring</span>
-          </div>
-          {getStatusIcon()}
-        </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="fixed bottom-6 right-6 z-50"
+    >
+      {/* Floating Camera Feed Card */}
+      <div className="relative">
+        {/* Compact View */}
+        {!isExpanded && (
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className={`cursor-pointer rounded-2xl shadow-2xl overflow-hidden border-2 transition-all duration-300 ${getStatusColor()}`}
+            onClick={() => setIsExpanded(true)}
+          >
+            {/* Live Video Feed */}
+            <div className="relative w-48 h-36 bg-gray-900">
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              
+              {/* Status Overlay */}
+              <div className="absolute top-2 left-2 right-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                    status.face === 'good' ? 'bg-green-500' : 'bg-red-500'
+                  }`}></div>
+                  <span className="text-white text-xs font-semibold">LIVE</span>
+                </div>
+                {getStatusIcon()}
+              </div>
+              
+              {/* AI Proctoring Label */}
+              <div className="absolute bottom-2 left-2 right-2">
+                <div className="px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center gap-2">
+                  <Camera className="w-3 h-3 text-white" />
+                  <span className="text-white text-xs font-medium">AI Monitoring</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
-        {/* Overall Status */}
-        <div className="mb-3 text-center py-2 bg-white bg-opacity-50 rounded">
-          <span className="font-bold text-lg">{status.overall}</span>
-        </div>
+        {/* Expanded View */}
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${getStatusColor()} w-80`}
+          >
+            {/* Header */}
+            <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-white" />
+                <span className="font-bold text-white">AI Proctoring</span>
+              </div>
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-white" />
+              </button>
+            </div>
 
-        {/* Detailed Status */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2">
-              <Camera className="w-4 h-4" />
-              Face Detection
-            </span>
-            <Badge variant={status.face === 'good' ? 'default' : 'destructive'} className="text-xs">
-              {status.face === 'good' ? '✓' : status.face === 'no_face' ? 'No Face' : 'Multiple'}
-            </Badge>
-          </div>
+            {/* Live Feed */}
+            <div className="relative h-48 bg-gray-900">
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+                <div className={`w-2 h-2 rounded-full animate-pulse ${
+                  status.face === 'good' ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-white text-xs font-semibold">LIVE</span>
+              </div>
+            </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              Eye Tracking
-            </span>
-            <Badge variant={status.gaze === 'good' ? 'default' : 'destructive'} className="text-xs">
-              {status.gaze === 'good' ? '✓' : 'Away'}
-            </Badge>
-          </div>
+            {/* Status Panel */}
+            <div className="p-4 bg-white/90 backdrop-blur-sm space-y-3">
+              {/* Overall Status */}
+              <div className="text-center py-2 px-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                <span className="font-bold text-sm text-gray-900">{status.overall}</span>
+              </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2">
-              <Monitor className="w-4 h-4" />
-              Tab Activity
-            </span>
-            <Badge variant={status.tabSwitch === 'good' ? 'default' : 'destructive'} className="text-xs">
-              {tabSwitchCountRef.current > 0 ? `${tabSwitchCountRef.current} switches` : '✓'}
-            </Badge>
-          </div>
-        </div>
+              {/* Detailed Status */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs bg-white rounded-lg p-2 shadow-sm">
+                  <span className="flex items-center gap-2 font-medium text-gray-700">
+                    <Camera className="w-3.5 h-3.5" />
+                    Face
+                  </span>
+                  <Badge variant={status.face === 'good' ? 'default' : 'destructive'} className="text-xs">
+                    {status.face === 'good' ? '✓' : status.face === 'no_face' ? 'None' : 'Multiple'}
+                  </Badge>
+                </div>
 
-        {/* Video Preview (Hidden but active) */}
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="hidden"
-        />
+                <div className="flex items-center justify-between text-xs bg-white rounded-lg p-2 shadow-sm">
+                  <span className="flex items-center gap-2 font-medium text-gray-700">
+                    <Eye className="w-3.5 h-3.5" />
+                    Gaze
+                  </span>
+                  <Badge variant={status.gaze === 'good' ? 'default' : 'destructive'} className="text-xs">
+                    {status.gaze === 'good' ? '✓' : 'Away'}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between text-xs bg-white rounded-lg p-2 shadow-sm">
+                  <span className="flex items-center gap-2 font-medium text-gray-700">
+                    <Monitor className="w-3.5 h-3.5" />
+                    Focus
+                  </span>
+                  <Badge variant={status.tabSwitch === 'good' ? 'default' : 'destructive'} className="text-xs">
+                    {tabSwitchCountRef.current > 0 ? `${tabSwitchCountRef.current}x` : '✓'}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Warnings */}
+              {(status.face !== 'good' || status.gaze !== 'good' || status.tabSwitch !== 'good') && (
+                <div className="mt-2 text-xs p-3 bg-orange-50 border border-orange-200 rounded-lg space-y-1">
+                  {status.face === 'no_face' && <p className="flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Ensure face is visible</p>}
+                  {status.face === 'multiple_faces' && <p className="flex items-center gap-1"><XCircle className="w-3 h-3" /> Multiple faces detected</p>}
+                  {status.gaze === 'away' && <p className="flex items-center gap-1"><Eye className="w-3 h-3" /> Look at the screen</p>}
+                  {status.tabSwitch === 'warning' && <p className="flex items-center gap-1"><Monitor className="w-3 h-3" /> Don't switch tabs</p>}
+                </div>
+              )}
+
+              {/* Violation Counter */}
+              {violations.length > 0 && (
+                <div className="text-center text-xs font-medium text-gray-600">
+                  {violations.length} warning{violations.length !== 1 ? 's' : ''} logged
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Hidden canvas for face detection */}
         <canvas ref={canvasRef} className="hidden" />
-
-        {/* Warning Message */}
-        {(status.face !== 'good' || status.gaze !== 'good' || status.tabSwitch !== 'good') && (
-          <div className="mt-3 text-xs p-2 bg-white bg-opacity-70 rounded">
-            {status.face === 'no_face' && <p>⚠️ Please ensure your face is visible to the camera</p>}
-            {status.face === 'multiple_faces' && <p>❌ Multiple faces detected. Only you should be visible</p>}
-            {status.gaze === 'away' && <p>👁️ Please look at the screen</p>}
-            {status.tabSwitch === 'warning' && <p>🚫 Tab switching is not allowed during exam</p>}
-          </div>
-        )}
-
-        {/* Violation Count */}
-        {violations.length > 0 && (
-          <div className="mt-3 text-xs text-center opacity-70">
-            {violations.length} warning{violations.length !== 1 ? 's' : ''} logged
-          </div>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

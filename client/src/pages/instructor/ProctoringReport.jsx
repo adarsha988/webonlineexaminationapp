@@ -44,7 +44,7 @@ const ProctoringReport = () => {
       setLoading(true);
 
       // Fetch submission details
-      const submissionResponse = await axios.get(`/api/instructor/grading/${submissionId}`, {
+      const submissionResponse = await axios.get(`/api/instructor/grading/submission/${submissionId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

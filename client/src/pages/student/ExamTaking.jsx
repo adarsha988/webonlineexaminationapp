@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { studentExamAPI } from '@/api/studentExams';
 import AIProctoringMonitor from '@/components/proctoring/AIProctoringMonitor';
+import ExamLayout from '@/layouts/ExamLayout';
 
 const ExamTaking = () => {
   const { id: examId } = useParams();
@@ -653,103 +654,123 @@ const ExamTaking = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* AI Proctoring Monitor */}
-      {proctoringEnabled && examSession && (
-        <AIProctoringMonitor 
-          examId={examId}
-          studentId={user?._id}
-          sessionId={examSession._id}
-          onViolation={handleProctoringViolation}
-        />
-      )}
+    <ExamLayout 
+      examTitle={examSession?.examId?.title}
+      timeRemaining={timeRemaining}
+      progress={progress}
+    >
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="min-h-screen relative"
+      >
+        {/* AI Proctoring Monitor - Floating Camera Feed */}
+        {proctoringEnabled && examSession && (
+          <AIProctoringMonitor 
+            examId={examId}
+            studentId={user?._id}
+            sessionId={examSession._id}
+            onViolation={handleProctoringViolation}
+          />
+        )}
 
-      {/* Header with Timer */}
-      <div className="bg-white border-b shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                {examSession?.examId?.title || 'Loading Exam...'}
-              </h1>
-              <p className="text-sm text-gray-600">
-                {examSession?.examId?.subject || 'Loading'} • Question {currentQuestionIndex + 1} of {questions.length}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {/* Auto-save status */}
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                {saving ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    {lastSavedAt ? `Saved at ${lastSavedAt.toLocaleTimeString()}` : 'Not saved'}
-                  </>
-                )}
+        {/* Action Bar - Floating at top */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="sticky top-20 z-40 mx-4 sm:mx-6 lg:mx-8 mt-4"
+        >
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200 px-4 sm:px-6 py-3">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              {/* Left: Question Info */}
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">Question {currentQuestionIndex + 1}</span>
+                  <span className="text-gray-400 mx-2">/</span>
+                  <span>{questions.length}</span>
+                </div>
+                <div className="h-6 w-px bg-gray-300"></div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  {saving ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                      <span className="text-blue-600 font-medium">Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-green-600 font-medium">Saved</span>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Manual save button */}
-              <Button variant="outline" size="sm" onClick={handleManualSave} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
+              {/* Right: Actions */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleManualSave} 
+                  disabled={saving}
+                  className="shadow-sm hover:shadow-md transition-all"
+                >
+                  <Save className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Save</span>
+                </Button>
+                <Button 
+                  onClick={() => setShowSubmitDialog(true)}
+                  size="sm"
+                  className={`shadow-lg hover:shadow-xl transition-all font-semibold ${
+                    timeRemaining <= 300 ? 'bg-red-600 hover:bg-red-700 animate-pulse' :
+                    timeRemaining <= 600 ? 'bg-orange-600 hover:bg-orange-700' :
+                    'bg-green-600 hover:bg-green-700'
+                  }`}
+                  disabled={isAutoSubmitting}
+                >
+                  <Send className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{isAutoSubmitting ? 'Submitting...' : 'Submit'}</span>
+                </Button>
+              </div>
+            </div>
 
-              {/* Timer */}
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                timeRemaining < 300 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-              }`}>
-                <Clock className="h-4 w-4" />
-                <span className="font-mono font-semibold">
-                  {formatTime(timeRemaining)}
+            {/* Enhanced Progress Bar */}
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex justify-between text-xs font-medium text-gray-600 mb-2">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                  {answeredCount} Answered
                 </span>
+                <span className="font-bold text-blue-600">{Math.round(progress)}% Complete</span>
               </div>
-
-              {/* Submit button */}
-              <Button 
-                onClick={() => setShowSubmitDialog(true)}
-                className={`${
-                  timeRemaining <= 300 ? 'bg-red-600 hover:bg-red-700 animate-pulse' :
-                  timeRemaining <= 600 ? 'bg-orange-600 hover:bg-orange-700' :
-                  'bg-green-600 hover:bg-green-700'
-                }`}
-                disabled={isAutoSubmitting}
-              >
-                {isAutoSubmitting ? 'Auto-Submitting...' : 'Submit Exam'}
-              </Button>
+              <div className="relative w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-full shadow-sm"
+                />
+              </div>
             </div>
           </div>
+        </motion.div>
 
-          {/* Progress bar */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Progress: {answeredCount}/{questions.length} answered</span>
-              <span>{Math.round(progress)}% complete</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
           {/* Question Navigation Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-32">
-              <CardHeader>
-                <CardTitle className="text-lg">Questions</CardTitle>
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="lg:col-span-1"
+          >
+            <Card className="sticky top-36 shadow-xl bg-white/95 backdrop-blur-sm border-gray-200 rounded-2xl">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold text-gray-900">Question Navigator</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 lg:grid-cols-4 gap-2">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-5 lg:grid-cols-4 gap-2 mb-4">
                   {questions.map((_, index) => {
                     const status = getQuestionStatus(index);
                     return (
@@ -757,10 +778,10 @@ const ExamTaking = () => {
                         key={index}
                         variant={status === 'current' ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-10 w-10 p-0 ${
-                          status === 'answered' ? 'bg-green-100 border-green-300 text-green-700' :
-                          status === 'current' ? 'bg-blue-600 text-white' :
-                          'bg-gray-50 border-gray-200'
+                        className={`h-10 w-10 p-0 font-semibold transition-all hover:scale-110 ${
+                          status === 'answered' ? 'bg-green-100 border-2 border-green-400 text-green-700 hover:bg-green-200' :
+                          status === 'current' ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg scale-110' :
+                          'bg-white border-2 border-gray-300 text-gray-600 hover:border-blue-400'
                         }`}
                         onClick={() => handleQuestionNavigation(index)}
                       >
@@ -770,31 +791,36 @@ const ExamTaking = () => {
                   })}
                 </div>
                 
-                <div className="mt-4 space-y-2 text-sm">
+                <div className="pt-3 border-t border-gray-200 space-y-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                    <span>Current</span>
+                    <div className="w-3 h-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded shadow-sm"></div>
+                    <span className="font-medium text-gray-700">Current</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                    <span>Answered</span>
+                    <div className="w-3 h-3 bg-green-100 border-2 border-green-400 rounded"></div>
+                    <span className="font-medium text-gray-700">Answered</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-gray-50 border border-gray-200 rounded"></div>
-                    <span>Not answered</span>
+                    <div className="w-3 h-3 bg-white border-2 border-gray-300 rounded"></div>
+                    <span className="font-medium text-gray-700">Unanswered</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
 
           {/* Main Question Area */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-3"
+          >
+            <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-gray-200 rounded-2xl">
+              <CardHeader className="border-b border-gray-100 pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-lg">
+                    <CardTitle className="text-xl font-bold text-gray-900">
                       Question {currentQuestionIndex + 1}
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-2">
@@ -817,25 +843,27 @@ const ExamTaking = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 {/* Question Text */}
-                <div className="prose max-w-none">
-                  <p className="text-gray-900 leading-relaxed">
+                <div className="prose max-w-none bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-l-4 border-blue-500">
+                  <p className="text-lg text-gray-900 leading-relaxed font-medium">
                     {currentQuestion?.questionText || 'Loading question...'}
                   </p>
                 </div>
 
                 {/* Answer Area */}
-                <div className="border-t pt-6">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">Your Answer:</h4>
                   {currentQuestion ? renderQuestion(currentQuestion) : <div>Loading question...</div>}
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between pt-6 border-t">
+                <div className="flex justify-between pt-6 border-t border-gray-200 gap-3">
                   <Button
                     variant="outline"
                     onClick={() => handleQuestionNavigation(currentQuestionIndex - 1)}
                     disabled={currentQuestionIndex === 0}
+                    className="flex-1 py-3 font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Previous
@@ -845,6 +873,7 @@ const ExamTaking = () => {
                     variant="outline"
                     onClick={() => handleQuestionNavigation(currentQuestionIndex + 1)}
                     disabled={currentQuestionIndex === (questions.length || 1) - 1}
+                    className="flex-1 py-3 font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-50"
                   >
                     Next
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -852,35 +881,54 @@ const ExamTaking = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Submit Confirmation Dialog */}
+      {/* Submit Confirmation Dialog - Enhanced */}
       <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to submit your exam? You have answered {answeredCount} out of {questions.length} questions.
+        <AlertDialogContent className="rounded-2xl border-2 border-gray-200 shadow-2xl backdrop-blur-sm bg-white/95 max-w-md">
+          <AlertDialogHeader className="space-y-4">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center">
+              <Send className="w-8 h-8 text-white" />
+            </div>
+            <AlertDialogTitle className="text-2xl font-bold text-center text-gray-900">
+              Submit Your Exam?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center space-y-3">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm text-gray-700">
+                  You have answered <span className="font-bold text-green-600">{answeredCount}</span> out of <span className="font-bold">{questions.length}</span> questions.
+                </p>
+              </div>
               {answeredCount < questions.length && (
-                <span className="text-orange-600 font-medium">
-                  <br />Warning: You have {questions.length - answeredCount} unanswered questions.
-                </span>
+                <div className="bg-orange-50 border-l-4 border-orange-400 rounded-r-xl p-4">
+                  <p className="text-sm text-orange-800 font-medium flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    You have {questions.length - answeredCount} unanswered question{questions.length - answeredCount > 1 ? 's' : ''}.
+                  </p>
+                </div>
               )}
-              <br /><br />
-              Once submitted, you cannot make any changes to your answers.
+              <p className="text-sm text-gray-600 pt-2">
+                ⚠️ Once submitted, you <strong>cannot</strong> make any changes to your answers.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSubmit} className="bg-green-600 hover:bg-green-700">
-              Submit Exam
+          <AlertDialogFooter className="flex gap-3 pt-4">
+            <AlertDialogCancel className="flex-1 py-3 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all">
+              Go Back
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleSubmit} 
+              className="flex-1 py-3 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              Submit Now
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </motion.div>
+    </ExamLayout>
   );
 };
 

@@ -20,6 +20,11 @@ export const studentExamAPI = {
     return response.data;
   },
 
+  getAllExams: async (studentId) => {
+    const response = await api.get(`${API_BASE_URL}/student/${studentId}/exams/all`);
+    return response.data;
+  },
+
   // Exam session management
   startExam: async (examId, studentId, sessionData = {}) => {
     const response = await api.post(`${API_BASE_URL}/exam-sessions/${examId}/start`, {

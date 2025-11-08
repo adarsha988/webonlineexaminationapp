@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+// @ts-ignore
 import Header from '../../components/home/Header';
+// @ts-ignore
 import HomePage from '../../components/home/HomePage';
+// @ts-ignore
 import Footer from '../../components/home/Footer';
+// @ts-ignore
 import AuthModal from '../../components/auth/AuthModal';
 import { checkAuth } from '../../store/authSlice';
+// @ts-ignore
 import type { RootState, AppDispatch } from '../../store/store';
 
 interface GuestHomepageProps {

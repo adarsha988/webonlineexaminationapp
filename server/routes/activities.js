@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import Activity from '../models/activity.model.js';
 import User from '../models/user.model.js';
+import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 
 // GET /api/recent-activities - Get recent activities with pagination
 router.get('/', async (req, res) => {
@@ -156,6 +157,35 @@ router.get('/stats', async (req, res) => {
   } catch (error) {
     console.error('Error fetching activity stats:', error);
     res.status(500).json({ message: 'Error fetching activity statistics', error: error.message });
+  }
+});
+
+// DELETE /api/recent-activities - Delete all activities
+router.delete('/', async (req, res) => {
+  try {
+    console.log('DELETE /api/recent-activities endpoint hit');
+    
+    // Count activities before deletion for logging
+    const countBeforeDelete = await Activity.countDocuments({});
+    console.log(`Found ${countBeforeDelete} activities to delete`);
+    
+    // Delete all activities from the database
+    const result = await Activity.deleteMany({});
+    
+    console.log(`Successfully deleted ${result.deletedCount} activities from database`);
+    
+    res.json({ 
+      success: true,
+      message: 'All activities deleted successfully', 
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error('Error deleting activities:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error deleting activities', 
+      error: error.message 
+    });
   }
 });
 

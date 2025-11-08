@@ -6,8 +6,7 @@ import {
   GraduationCap, 
   BookOpen, 
   FileText, 
-  Activity, 
-  Server 
+  Activity
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
@@ -69,14 +68,6 @@ export function DashboardStats() {
             color: "text-red-600",
             bgColor: "bg-red-50",
             route: "/admin/analytics"
-          },
-          {
-            title: "System Analytics",
-            value: data.systemHealth === 'Good' ? '98.5%' : '85.2%',
-            icon: Server,
-            color: "text-indigo-600",
-            bgColor: "bg-indigo-50",
-            route: "/admin/system-analytics"
           }
         ];
         setStats(statsData);
@@ -140,27 +131,19 @@ export function DashboardStats() {
         color: "text-red-600",
         bgColor: "bg-red-50",
         route: "/admin/analytics"
-      },
-      {
-        title: "System Analytics",
-        value: "98.5%",
-        icon: Server,
-        color: "text-indigo-600",
-        bgColor: "bg-indigo-50",
-        route: "/admin/system-analytics"
       }
     ];
     setStats(fallbackStats);
   };
 
   const handleCardClick = (route) => {
-    setLocation(route);
+    navigate(route);
   };
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        {[...Array(6)].map((_, index) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {[...Array(5)].map((_, index) => (
           <Card key={index} className="animate-pulse">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="h-4 bg-gray-200 rounded w-20"></div>
@@ -176,7 +159,7 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         // Disable all stat cards

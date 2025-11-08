@@ -13,6 +13,10 @@ const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard'));
 import ExamTaking from '@/pages/student/ExamTaking';
 const StudentAnalytics = lazy(() => import('@/pages/student/StudentAnalytics'));
 const ExamResult = lazy(() => import('@/pages/student/ExamResult'));
+// @ts-ignore
+const StudentResults = lazy(() => import('@/pages/student/Results'));
+// @ts-ignore
+const StudentExamsList = lazy(() => import('@/pages/student/ExamsList'));
 // Temporarily using regular import to debug dynamic import issue
 import InstructorDashboard from '@/pages/instructor/Dashboard';
 const InstructorExamCreator = lazy(() => import('@/pages/instructor/ExamCreator'));
@@ -74,6 +78,16 @@ function AppRoutes() {
       <Route path="/student/exams/completed" element={
         <ProtectedRoute allowedRoles={['student']}>
           <StudentCompletedExams />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/results" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentResults />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/exams" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentExamsList />
         </ProtectedRoute>
       } />
       

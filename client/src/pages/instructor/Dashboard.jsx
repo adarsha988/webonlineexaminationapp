@@ -73,16 +73,17 @@ const InstructorDashboard = () => {
 
   const { stats, recentExams } = dashboardData;
 
-  const StatCard = ({ icon: Icon, title, value, iconColor }) => (
-    <Card className="card-hover">
-      <CardContent className="p-6">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <Icon className={`h-8 w-8 ${iconColor}`} />
+  const StatCard = ({ icon: Icon, title, value, iconColor, gradient }) => (
+    <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-gray-50">
+      <div className={`absolute top-0 right-0 w-32 h-32 ${gradient} opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity`}></div>
+      <CardContent className="p-6 relative z-10">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">{title}</p>
+            <p className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">{value}</p>
           </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold text-foreground">{value}</p>
+          <div className={`p-4 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <Icon className="h-8 w-8 text-white" />
           </div>
         </div>
       </CardContent>
@@ -94,13 +95,13 @@ const InstructorDashboard = () => {
       switch (status) {
         case 'published':
         case 'upcoming':
-          return 'bg-green-100 text-green-800';
+          return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-200';
         case 'completed':
-          return 'bg-blue-100 text-blue-800';
+          return 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-200';
         case 'draft':
-          return 'bg-gray-100 text-gray-800';
+          return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg shadow-gray-200';
         default:
-          return 'bg-gray-100 text-gray-800';
+          return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg shadow-gray-200';
       }
     };
 
@@ -120,51 +121,53 @@ const InstructorDashboard = () => {
     };
 
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">{exam.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                {exam.subject} • {exam.questionsCount || 0} Questions • {exam.totalMarks || 0} Marks
+      <Card className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+        <CardContent className="p-6 relative z-10">
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent group-hover:from-indigo-700 group-hover:to-blue-700 transition-all">{exam.title}</h3>
+              <p className="text-sm text-gray-600 font-medium mt-2">
+                📚 {exam.subject} • {exam.questionsCount || 0} Questions • {exam.totalMarks || 0} Marks
               </p>
               {exam.scheduledDate && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Scheduled: {new Date(exam.scheduledDate).toLocaleDateString()}
+                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {new Date(exam.scheduledDate).toLocaleDateString()}
                 </p>
               )}
             </div>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(exam.status)}`}>
+            <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold ${getStatusColor(exam.status)}`}>
               {getStatusLabel(exam.status)}
             </span>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{exam.duration || 0}</p>
-              <p className="text-xs text-muted-foreground">Minutes</p>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-3 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
+              <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">{exam.duration || 0}</p>
+              <p className="text-xs text-gray-600 font-semibold mt-1">Minutes</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">{exam.attemptsCount || 0}</p>
-              <p className="text-xs text-muted-foreground">Attempts</p>
+            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+              <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{exam.attemptsCount || 0}</p>
+              <p className="text-xs text-gray-600 font-semibold mt-1">Attempts</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">
+            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+              <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {exam.averageScore ? `${exam.averageScore}%` : '-'}
               </p>
-              <p className="text-xs text-muted-foreground">Avg Score</p>
+              <p className="text-xs text-gray-600 font-semibold mt-1">Avg Score</p>
             </div>
           </div>
           
-          <div className="flex space-x-2">
-            <Button size="sm" className="flex-1" data-testid={`button-view-results-${exam.id}`}>
+          <div className="flex gap-3">
+            <Button size="sm" className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl transition-all duration-300" data-testid={`button-view-results-${exam.id}`}>
               <Eye className="h-4 w-4 mr-2" />
               View Results
             </Button>
-            <Link to={`/instructor/exam/${exam.id}/edit`}>
-              <Button variant="outline" size="sm" className="flex-1">
+            <Link to={`/instructor/exam/${exam.id}/edit`} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300">
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Exam
+                Edit
               </Button>
             </Link>
           </div>
@@ -173,113 +176,130 @@ const InstructorDashboard = () => {
     );
   };
 
-  const QuickActionCard = ({ icon: Icon, title, description, action, variant = "outline" }) => (
-    <Card>
-      <CardContent className="p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
-        <p className="text-xs text-muted-foreground mb-3">{description}</p>
-        <Button variant={variant} size="sm" className="w-full" onClick={action}>
-          <Icon className="h-4 w-4 mr-2" />
-          {title}
-        </Button>
+  const QuickActionCard = ({ icon: Icon, title, description, action, variant = "outline", gradient }) => (
+    <Card className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-gray-50 overflow-hidden cursor-pointer">
+      <div className={`absolute top-0 right-0 w-32 h-32 ${gradient} opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity`}></div>
+      <CardContent className="p-6 relative z-10">
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`p-3 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">{title}</h3>
+            <p className="text-sm text-gray-600 mt-1">{description}</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 
   return (
     <InstructorLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Instructor Dashboard</h1>
-            <p className="text-muted-foreground">Manage your examinations and track student progress</p>
-          </div>
-          <div className="flex gap-2">
-            <Link to="/instructor/exams">
-              <Button variant="outline">
-                <Eye className="h-4 w-4 mr-2" />
-                View All Exams
-              </Button>
-            </Link>
-            <Link to="/instructor/exam-creation">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Exam
-              </Button>
-            </Link>
-          </div>
+      {/* Gradient Background */}
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 relative overflow-hidden">
+        {/* Animated Mesh Gradient Blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-blue-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 -left-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={FileText}
-            title="Total Exams"
-            value={stats.totalExams}
-            iconColor="text-primary"
-          />
-          <StatCard
-            icon={Users}
-            title="Total Attempts"
-            value={stats.totalAttempts}
-            iconColor="text-secondary"
-          />
-          <StatCard
-            icon={TrendingUp}
-            title="Avg Score"
-            value={`${stats.avgScore}%`}
-            iconColor="text-accent"
-          />
-          <StatCard
-            icon={Clock}
-            title="Pending"
-            value={stats.pendingGrades}
-            iconColor="text-destructive"
-          />
-        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Quick Actions */}
-        <div className="max-w-md mx-auto">
-          <h2 className="text-xl font-semibold text-foreground mb-4 text-center">Quick Actions</h2>
-          <div className="space-y-4">
-            <Link to="/instructor/exam-creation">
-              <QuickActionCard
-                icon={Plus}
-                title="New Exam"
-                description="Start creating a new examination"
-                action={() => {}}
-                variant="default"
-              />
-            </Link>
-            
-            <Link to="/instructor/question-bank">
-              <QuickActionCard
-                icon={Database}
-                title="View Bank"
-                description="Manage your question library"
-                action={() => {}}
-              />
-            </Link>
-          </div>
-        </div>
-
-        {/* Completed Exams Section */}
-        <div className="mt-12">
-          <div className="flex justify-between items-center mb-6">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
             <div>
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-                Completed Exams
-              </h2>
-              <p className="text-muted-foreground mt-1">Review student submissions and send reports</p>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">Instructor Dashboard</h1>
+              <p className="text-gray-600 text-lg font-medium">Manage your examinations and track student progress</p>
             </div>
-            <Link to="/instructor/completed-exams">
-              <Button variant="outline">
-                View All Completed
-              </Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link to="/instructor/exams">
+                <Button variant="outline" className="border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All Exams
+                </Button>
+              </Link>
+              <Link to="/instructor/exam-creation">
+                <Button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Exam
+                </Button>
+              </Link>
+            </div>
           </div>
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <StatCard
+              icon={FileText}
+              title="Total Exams"
+              value={stats.totalExams}
+              gradient="from-indigo-500 to-blue-600"
+            />
+            <StatCard
+              icon={Users}
+              title="Total Attempts"
+              value={stats.totalAttempts}
+              gradient="from-purple-500 to-pink-600"
+            />
+            <StatCard
+              icon={TrendingUp}
+              title="Avg Score"
+              value={`${stats.avgScore}%`}
+              gradient="from-green-500 to-emerald-600"
+            />
+            <StatCard
+              icon={Clock}
+              title="Pending"
+              value={stats.pendingGrades}
+              gradient="from-orange-500 to-red-600"
+            />
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-6 text-center">Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <Link to="/instructor/exam-creation">
+                <QuickActionCard
+                  icon={Plus}
+                  title="New Exam"
+                  description="Start creating a new examination"
+                  action={() => {}}
+                  gradient="from-indigo-500 to-blue-600"
+                />
+              </Link>
+              
+              <Link to="/instructor/question-bank">
+                <QuickActionCard
+                  icon={Database}
+                  title="Question Bank"
+                  description="Manage your question library"
+                  action={() => {}}
+                  gradient="from-purple-500 to-pink-600"
+                />
+              </Link>
+            </div>
+          </div>
+
+          {/* Completed Exams Section */}
+          <div className="mt-16">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                    <CheckCircle className="h-7 w-7 text-white" />
+                  </div>
+                  Completed Exams
+                </h2>
+                <p className="text-gray-600 text-lg mt-2 ml-14">Review student submissions and send reports</p>
+              </div>
+              <Link to="/instructor/completed-exams">
+                <Button variant="outline" className="border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  View All Completed
+                </Button>
+              </Link>
+            </div>
 
           {loadingCompleted ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -382,6 +402,7 @@ const InstructorDashboard = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </InstructorLayout>
   );

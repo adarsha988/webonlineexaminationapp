@@ -71,12 +71,19 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        
+        // Wait for video to load before proceeding
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video loaded with dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+          // Give it a moment to fully initialize
+          setTimeout(() => {
+            setVerificationStep('face-check');
+          }, 500);
+        };
       }
 
       // Setup audio monitoring
       setupAudioMonitoring(mediaStream);
-
-      setVerificationStep('face-check');
     } catch (err) {
       console.error('Permission error:', err);
       setError('Camera and microphone access are required for this exam. Please allow access and try again.');
@@ -119,12 +126,32 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
   };
 
   const detectFace = async () => {
-    if (!model || !videoRef.current) return;
+    if (!model || !videoRef.current) {
+      setError('Camera not ready. Please wait...');
+      return;
+    }
+
+    // Wait for video to be ready with valid dimensions
+    if (videoRef.current.readyState < 2 || videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+      setError('Video is loading. Please wait a moment...');
+      // Retry after a short delay
+      setTimeout(() => {
+        if (videoRef.current && videoRef.current.readyState >= 2) {
+          detectFace();
+        }
+      }, 500);
+      return;
+    }
 
     setIsVerifying(true);
+    setError('');
 
     try {
+      console.log('Starting face detection. Video dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+      
       const predictions = await model.estimateFaces(videoRef.current, false);
+      
+      console.log('Face detection predictions:', predictions.length);
       
       if (predictions.length === 1) {
         setFaceDetected(true);
@@ -141,7 +168,8 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
       }
     } catch (error) {
       console.error('Face detection error:', error);
-      setError('Face detection failed. Please try again.');
+      setError('Face detection failed. Please ensure your face is clearly visible and try again.');
+      setFaceDetected(false);
     } finally {
       setIsVerifying(false);
     }
@@ -357,13 +385,13 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
         <p className="text-gray-600">Position yourself in the frame and look at the camera</p>
       </div>
 
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-purple-200">
+      <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-purple-200 bg-gray-900">
         <video
           ref={videoRef}
           autoPlay
           muted
           playsInline
-          className="w-full max-w-2xl mx-auto"
+          className="w-full max-w-2xl mx-auto min-h-[400px] object-cover"
         />
         
         <div className="absolute top-4 left-4 right-4">
@@ -415,7 +443,19 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
         disabled={isVerifying || faceDetected}
         className="w-full bg-purple-600 text-white py-4 px-6 rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-lg shadow-lg"
       >
-        {faceDetected ? 'Face Verified ✓' : 'Verify Face'}
+        {isVerifying ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Detecting...
+          </span>
+        ) : faceDetected ? (
+          'Face Verified ✓'
+        ) : (
+          'Verify Face'
+        )}
       </button>
     </motion.div>
   );
