@@ -79,7 +79,7 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
     }
     
     if (notification.link) {
-      setLocation(notification.link);
+      navigate(notification.link);
     }
   };
 
@@ -101,13 +101,13 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'exam':
-        return '📝';
+        return <Bell className="h-4 w-4 text-blue-500" />;
       case 'result':
-        return '📊';
+        return <Check className="h-4 w-4 text-green-500" />;
       case 'system':
-        return '⚙️';
+        return <Bell className="h-4 w-4 text-gray-500" />;
       default:
-        return '📢';
+        return <Bell className="h-4 w-4 text-indigo-500" />;
     }
   };
 
@@ -126,7 +126,7 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end">
+      <DropdownMenuContent className="w-80 bg-white border-2 border-gray-200 shadow-2xl" align="end">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
           {unreadCount > 0 && (
@@ -149,13 +149,13 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
             {notifications.slice(0, 5).map((notification) => (
               <DropdownMenuItem
                 key={notification._id}
-                className={`cursor-pointer p-3 ${!notification.isRead ? 'bg-blue-50' : ''}`}
+                className={`cursor-pointer p-3 hover:bg-gray-50 transition-colors ${!notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'bg-white'}`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start gap-3 w-full">
-                  <span className="text-lg flex-shrink-0">
+                  <div className="flex-shrink-0 mt-1">
                     {getNotificationIcon(notification.type)}
-                  </span>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-medium text-sm text-gray-900 truncate">

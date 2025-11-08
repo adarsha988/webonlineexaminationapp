@@ -181,20 +181,25 @@ const StudentDashboard = () => {
     navigate(`/student/exam/${examId}/result`);
   };
 
+  const refreshNotifications = async () => {
+    try {
+      const studentId = user._id || user.id;
+      const notificationsResponse = await studentNotificationsAPI.getNotifications(studentId, 1, 5);
+      
+      if (notificationsResponse.success || notificationsResponse.data) {
+        setNotifications(notificationsResponse.data || []);
+        setUnreadCount(notificationsResponse.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error refreshing notifications:', error);
+    }
+  };
+
   const handleMarkAsRead = async (notificationId) => {
     try {
       await studentNotificationsAPI.markAsRead(user._id || user.id, notificationId);
       // Refresh notifications after marking as read
-      const notificationsResponse = await studentNotificationsAPI.getNotifications(user._id || user.id, {
-        page: 1,
-        limit: 50,
-        unreadOnly: false
-      });
-      
-      if (notificationsResponse.success) {
-        setNotifications(notificationsResponse.data);
-        setUnreadCount(notificationsResponse.unreadCount);
-      }
+      await refreshNotifications();
     } catch (error) {
       console.error('Error marking notification as read:', error);
       toast({
@@ -294,7 +299,7 @@ const StudentDashboard = () => {
                 transition={{ type: "spring", stiffness: 200 }}
               >
                 <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Welcome back, {user?.name}! ✨
+                  Welcome back, {user?.name}!
                 </h1>
                 <p className="text-gray-600 mt-2 text-sm sm:text-base">
                   Here's what's happening with your exams today.
@@ -312,7 +317,7 @@ const StudentDashboard = () => {
             <NotificationDropdown 
               notifications={notifications}
               unreadCount={unreadCount}
-              onMarkAsRead={handleMarkAsRead}
+              onMarkAsRead={refreshNotifications}
             />
           </motion.div>
 
@@ -454,8 +459,8 @@ const StudentDashboard = () => {
               transition={{ delay: 0.3 }}
             >
               <TabsList className="bg-white/80 backdrop-blur-sm shadow-lg border-none">
-                <TabsTrigger value="exams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">📚 Exams</TabsTrigger>
-                <TabsTrigger value="notifications" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">🔔 Notifications</TabsTrigger>
+                <TabsTrigger value="exams" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">Exams</TabsTrigger>
+                <TabsTrigger value="notifications" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Notifications</TabsTrigger>
               </TabsList>
             </motion.div>
 
@@ -523,7 +528,7 @@ const StudentDashboard = () => {
                                 transition={{ duration: 1.5, repeat: Infinity }}
                               >
                                 <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none shadow-lg">
-                                  🔥 Active
+                                  Active
                                 </Badge>
                               </motion.div>
                             </div>
@@ -845,7 +850,7 @@ const StudentDashboard = () => {
                           <Bell className="h-20 w-20 text-gray-300 mx-auto mb-4" />
                         </motion.div>
                         <p className="text-gray-500 font-medium text-lg">No notifications</p>
-                        <p className="text-gray-400 text-sm mt-2">You're all caught up! 🎉</p>
+                        <p className="text-gray-400 text-sm mt-2">You're all caught up!</p>
                       </CardContent>
                     </Card>
                   </motion.div>

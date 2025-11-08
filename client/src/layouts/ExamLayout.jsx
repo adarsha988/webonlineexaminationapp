@@ -36,7 +36,7 @@ const ExamLayout = ({ children, showHeader = true, examTitle, timeRemaining, pro
               >
                 <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-md">
                   <GraduationCap className="w-6 h-6 text-white" />
-                  <span className="text-white font-bold text-lg hidden sm:inline">ExamPortal</span>
+                  <span className="text-white font-bold text-base sm:text-lg hidden sm:inline">Online Examination System</span>
                 </div>
               </motion.div>
 
