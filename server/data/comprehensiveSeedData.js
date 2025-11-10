@@ -126,6 +126,19 @@ export async function seedComprehensiveData() {
           specialization: 'Mathematics',
           experience: 8
         }
+      },
+      {
+        name: 'Dr. James Chen',
+        email: 'james@university.edu',
+        password: defaultPassword,
+        role: 'instructor',
+        status: 'active',
+        profile: {
+          phone: '+1-555-0203',
+          address: 'Chemistry Department, Room 102',
+          specialization: 'Chemistry',
+          experience: 12
+        }
       }
     ]);
 
@@ -941,8 +954,13 @@ export async function seedComprehensiveData() {
     console.log('🔔 Created notifications');
 
     // 9. Create Activity Records using dedicated seed function
-    await seedActivityData();
-    console.log('📈 Activity records seeded');
+    const activities = [];
+    try {
+      await seedActivityData();
+      console.log('📈 Activity records seeded');
+    } catch (err) {
+      console.log('⚠️ Activity seeding skipped:', err.message);
+    }
 
     // 10. Update statistics and relationships
     console.log('🔄 Updating relationships and statistics...');

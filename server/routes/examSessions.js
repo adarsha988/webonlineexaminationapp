@@ -360,10 +360,16 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
     
     console.log('✅ SUBMISSION SAVED SUCCESSFULLY - Status:', studentExam.status);
     
+    // Get violation count
+    const violationCount = studentExam.violations?.length || 0;
+    
     // Prepare response message
     let message = 'Exam submitted successfully!';
     if (pendingManualGrading > 0) {
       message += ` ${pendingManualGrading} marks pending manual grading by instructor.`;
+    }
+    if (violationCount > 0) {
+      message += ` ${violationCount} violation(s) detected and reported to instructor.`;
     }
     
     res.json({
@@ -378,6 +384,7 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
         pendingManualMarks: pendingManualGrading,
         status: finalStatus,
         gradingStatus: pendingManualGrading > 0 ? 'partial' : 'complete',
+        violations: violationCount,
         answersSummary: {
           total: processedAnswers.length,
           autoGraded: processedAnswers.filter(a => a.gradingStatus === 'auto_graded').length,

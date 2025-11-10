@@ -43,7 +43,7 @@ const ProctoringReport = () => {
     try {
       setLoading(true);
 
-      // Fetch submission details
+      // Fetch submission details with violations
       const submissionResponse = await axios.get(`/api/instructor/grading/submission/${submissionId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -51,16 +51,49 @@ const ProctoringReport = () => {
       });
       
       if (submissionResponse.data.success) {
-        setSubmission(submissionResponse.data.data);
+        const submissionData = submissionResponse.data.data;
+        setSubmission(submissionData);
+        
+        // Use real violations from submission or fall back to empty array
+        const violations = submissionData.violations || [];
+        
+        // Convert violations to log format
+        const realLogs = violations.map((violation, index) => ({
+          _id: violation._id || `violation_${index}`,
+          eventType: violation.type || violation.eventType || 'unknown',
+          severity: violation.severity || 'medium',
+          description: violation.description || 'Violation detected',
+          timestamp: violation.timestamp || violation.createdAt || new Date().toISOString(),
+          metadata: violation.metadata || {}
+        }));
+        
+        // Add session start/end logs
+        const allLogs = [
+          {
+            _id: 'session_start',
+            eventType: 'session_start',
+            severity: 'info',
+            description: 'Exam session started',
+            timestamp: submissionData.startedAt || new Date().toISOString(),
+            metadata: {}
+          },
+          ...realLogs,
+          {
+            _id: 'session_end',
+            eventType: 'session_end',
+            severity: 'info',
+            description: 'Exam session completed and submitted',
+            timestamp: submissionData.submittedAt || new Date().toISOString(),
+            metadata: {}
+          }
+        ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        
+        setProctoringLogs(allLogs);
+        
+        // Generate summary from real violations
+        const realSummary = generateSummaryFromViolations(realLogs);
+        setViolationSummary(realSummary);
       }
-
-      // Fetch proctoring logs (if there's an attempt ID)
-      // For now, we'll simulate this data
-      const mockLogs = generateMockLogs();
-      setProctoringLogs(mockLogs);
-
-      const mockSummary = generateMockSummary(mockLogs);
-      setViolationSummary(mockSummary);
 
     } catch (error) {
       console.error('Error fetching proctoring data:', error);
@@ -99,9 +132,9 @@ const ProctoringReport = () => {
     }));
   };
 
-  const generateMockSummary = (logs) => {
+  const generateSummaryFromViolations = (logs) => {
     const violations = logs.filter(log => 
-      ['no_face', 'multiple_faces', 'tab_switch', 'window_blur', 'gaze_away'].includes(log.eventType)
+      !['session_start', 'session_end'].includes(log.eventType)
     );
 
     const violationsByType = violations.reduce((acc, log) => {
@@ -109,13 +142,23 @@ const ProctoringReport = () => {
       return acc;
     }, {});
 
+    const criticalCount = violations.filter(v => v.severity === 'high' || v.severity === 'critical').length;
+    const suspicionScore = Math.min(
+      (violations.length * 12) + (criticalCount * 15),
+      100
+    );
+
     return {
       totalViolations: violations.length,
-      criticalViolations: violations.filter(v => v.severity === 'high').length,
-      suspicionScore: Math.min((violations.length * 15) + (violations.filter(v => v.severity === 'high').length * 10), 100),
-      integrityRating: Math.max(100 - (violations.length * 15), 0),
+      criticalViolations: criticalCount,
+      suspicionScore: Math.round(suspicionScore),
+      integrityRating: Math.max(100 - Math.round(suspicionScore), 0),
       violationsByType
     };
+  };
+
+  const generateMockSummary = (logs) => {
+    return generateSummaryFromViolations(logs);
   };
 
   const formatDate = (dateString) => {

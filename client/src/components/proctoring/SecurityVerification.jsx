@@ -176,6 +176,17 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
   };
 
   const completeVerification = () => {
+    // Ensure all requirements are met
+    if (!permissions.camera || !permissions.microphone) {
+      setError('Camera and microphone access are required to start the exam.');
+      return;
+    }
+
+    if (!faceDetected) {
+      setError('Face verification is required. Please complete face detection first.');
+      return;
+    }
+
     const verificationData = {
       permissions,
       faceDetected,
@@ -567,14 +578,28 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
         </div>
       </div>
 
+      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl">
+        <div className="flex items-start">
+          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+          <div>
+            <h4 className="font-semibold text-red-900 mb-1">Critical Requirements</h4>
+            <ul className="text-sm text-red-800 space-y-1">
+              <li>✓ Camera and microphone must remain active during the entire exam</li>
+              <li>✓ Any attempt to disable them will terminate your exam session</li>
+              <li>✓ Face must be visible at all times</li>
+              <li>✓ Tab switching or window blur will be logged as violations</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl">
         <div className="flex items-start">
           <Lock className="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
           <div>
-            <h4 className="font-semibold text-yellow-900 mb-1">Exam Monitoring Active</h4>
+            <h4 className="font-semibold text-yellow-900 mb-1">Continuous Monitoring</h4>
             <p className="text-sm text-yellow-800">
-              Your exam session will be monitored for security purposes. Remember to keep your face visible
-              and avoid switching tabs or minimizing the browser window.
+              AI-powered proctoring will monitor your session. Violations are automatically logged and reported to instructors.
             </p>
           </div>
         </div>
@@ -590,9 +615,17 @@ const SecurityVerification = ({ onVerificationComplete, examId, examTitle }) => 
 
       <button
         onClick={completeVerification}
-        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-5 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-[1.02] font-bold text-xl shadow-2xl"
+        disabled={!permissions.camera || !permissions.microphone || !faceDetected}
+        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-5 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-[1.02] font-bold text-xl shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        Start Exam Now →
+        {(!permissions.camera || !permissions.microphone || !faceDetected) ? (
+          <span className="flex items-center justify-center gap-2">
+            <AlertTriangle className="w-6 h-6" />
+            Complete All Verifications First
+          </span>
+        ) : (
+          'Start Exam Now →'
+        )}
       </button>
     </motion.div>
   );

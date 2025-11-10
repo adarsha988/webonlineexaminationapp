@@ -61,6 +61,36 @@ const ExamTaking = () => {
   const autoSaveRef = useRef(null);
   const visibilityRef = useRef(true);
 
+  // Check verification status - redirect if not verified
+  useEffect(() => {
+    const verificationKey = `exam_verified_${examId}`;
+    const verificationData = sessionStorage.getItem(verificationKey);
+    
+    if (!verificationData) {
+      console.log('❌ Not verified, redirecting to verification...');
+      toast({
+        title: "Verification Required",
+        description: "Please complete camera and microphone verification first",
+        variant: "destructive",
+      });
+      navigate(`/student/exam-verification/${examId}`, { replace: true });
+    } else {
+      const parsed = JSON.parse(verificationData);
+      const verificationAge = Date.now() - new Date(parsed.timestamp).getTime();
+      // Verification expires after 5 minutes
+      if (verificationAge > 5 * 60 * 1000) {
+        console.log('❌ Verification expired, redirecting...');
+        sessionStorage.removeItem(verificationKey);
+        toast({
+          title: "Verification Expired",
+          description: "Please verify your devices again",
+          variant: "destructive",
+        });
+        navigate(`/student/exam-verification/${examId}`, { replace: true });
+      }
+    }
+  }, [examId, navigate, toast]);
+
   // Load exam session
   useEffect(() => {
     if (user && examId) {

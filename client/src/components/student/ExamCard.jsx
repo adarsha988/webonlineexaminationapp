@@ -265,14 +265,16 @@ const ExamCard = ({ exam, onStart, onViewResult, type = 'upcoming' }) => {
                 <p className="text-gray-600 mt-1">{exam.feedback}</p>
               </div>
             )}
-            <Button 
-              onClick={() => onViewResult(exam.examId?._id || exam._id)}
-              variant="outline"
-              className="w-full"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              View Details
-            </Button>
+            {(exam.examId?._id || exam._id) && (
+              <Button 
+                onClick={() => onViewResult(exam.examId?._id || exam._id)}
+                variant="outline"
+                className="w-full"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

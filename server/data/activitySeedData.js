@@ -26,8 +26,8 @@ export async function seedActivityData() {
       return;
     }
 
-    if (instructors.length === 0 || students.length === 0) {
-      console.log('⚠️ Insufficient users found. Please seed users first.');
+    if (instructors.length < 3 || students.length < 5) {
+      console.log(`⚠️ Insufficient users found. Need 3+ instructors and 5+ students. Found: ${instructors.length} instructors, ${students.length} students`);
       return;
     }
 

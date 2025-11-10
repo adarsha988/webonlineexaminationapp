@@ -62,7 +62,7 @@ export const studentExamAPI = {
   },
 
   getExamResult: async (examId, studentId) => {
-    const response = await api.get(`${API_BASE_URL}/exams/${examId}/result?studentId=${studentId}`);
+    const response = await api.get(`${API_BASE_URL}/student/${studentId}/exam/${examId}/result`);
     return response.data;
   },
 

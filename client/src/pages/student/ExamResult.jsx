@@ -12,7 +12,8 @@ import {
   Download,
   Share2,
   Target,
-  BookOpen
+  BookOpen,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,13 +51,13 @@ const ExamResult = () => {
       setComparative(comparativeRes?.data);
 
     } catch (error) {
-      console.error('Error fetching exam result:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to load exam result",
-        variant: "destructive",
-      });
-      navigate('/student/dashboard');
+      console.error('[ERROR] Error fetching exam result:', JSON.stringify({
+        message: error.message,
+        error: error.response?.data || {}
+      }));
+      
+      // Don't redirect immediately, show result as null to display proper error UI
+      setResult(null);
     } finally {
       setLoading(false);
     }
@@ -189,13 +190,13 @@ const ExamResult = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div>
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {result.score || 0}/{result.examId?.totalMarks || 0}
+                    {result.score || 0}/{result.totalMarks || result.maxScore || result.examId?.totalMarks || result.exam?.totalMarks || 0}
                   </div>
                   <p className="text-gray-600">Score</p>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {result.percentage || 0}%
+                    {Math.round(result.percentage || 0)}%
                   </div>
                   <p className="text-gray-600">Percentage</p>
                 </div>
@@ -219,7 +220,7 @@ const ExamResult = () => {
         </motion.div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -261,26 +262,6 @@ const ExamResult = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Subject</p>
-                    <p className="text-lg font-bold text-purple-600">
-                      {result.examId?.subject || 'N/A'}
-                    </p>
-                  </div>
-                  <BookOpen className="h-8 w-8 text-purple-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
             <Card>
@@ -293,6 +274,46 @@ const ExamResult = () => {
                     </Badge>
                   </div>
                   <Target className="h-8 w-8 text-orange-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Violations</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {result.violationCount || result.violations?.length || 0}
+                    </p>
+                  </div>
+                  <AlertTriangle className={`h-8 w-8 ${(result.violationCount || result.violations?.length) > 0 ? 'text-red-500' : 'text-gray-300'}`} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Subject</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      {result.examId?.subject || result.exam?.subject || 'N/A'}
+                    </p>
+                  </div>
+                  <BookOpen className="h-8 w-8 text-purple-500" />
                 </div>
               </CardContent>
             </Card>

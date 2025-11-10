@@ -537,4 +537,175 @@ router.get('/suspicious-attempts', authenticateToken, async (req, res) => {
   }
 });
 
+// Get all violations for instructor dashboard
+router.get('/violations', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is instructor or admin
+    if (req.user.role !== 'instructor' && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Access denied. Instructors only.' 
+      });
+    }
+
+    // Fetch all proctoring logs with populated student and exam information
+    const violations = await ProctoringLog.find({})
+      .populate({
+        path: 'attemptId',
+        populate: [
+          { path: 'userId', select: 'name email profile' },
+          { path: 'examId', select: 'title subject scheduledDate' }
+        ]
+      })
+      .sort({ timestamp: -1 })
+      .limit(1000) // Limit to last 1000 violations
+      .lean();
+
+    // Transform data for frontend
+    const transformedViolations = violations
+      .filter(v => v.attemptId) // Only include violations with valid attempts
+      .map(v => ({
+        _id: v._id,
+        eventType: v.eventType,
+        severity: v.severity,
+        description: v.description,
+        timestamp: v.timestamp,
+        studentId: v.attemptId.userId,
+        examId: v.attemptId.examId,
+        metadata: v.metadata
+      }));
+
+    res.json({
+      success: true,
+      data: transformedViolations,
+      total: transformedViolations.length
+    });
+  } catch (error) {
+    console.error('Error fetching violations:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch violations',
+      error: error.message 
+    });
+  }
+});
+
+// Get violations for a specific exam
+router.get('/violations/exam/:examId', authenticateToken, async (req, res) => {
+  try {
+    const { examId } = req.params;
+
+    // Check if user is instructor or admin
+    if (req.user.role !== 'instructor' && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Access denied. Instructors only.' 
+      });
+    }
+
+    // Find all attempts for this exam
+    const attempts = await Attempt.find({ examId }).select('_id');
+    const attemptIds = attempts.map(a => a._id);
+
+    // Fetch violations for these attempts
+    const violations = await ProctoringLog.find({ attemptId: { $in: attemptIds } })
+      .populate({
+        path: 'attemptId',
+        populate: [
+          { path: 'userId', select: 'name email profile' },
+          { path: 'examId', select: 'title subject scheduledDate' }
+        ]
+      })
+      .sort({ timestamp: -1 })
+      .lean();
+
+    // Transform data
+    const transformedViolations = violations
+      .filter(v => v.attemptId)
+      .map(v => ({
+        _id: v._id,
+        eventType: v.eventType,
+        severity: v.severity,
+        description: v.description,
+        timestamp: v.timestamp,
+        studentId: v.attemptId.userId,
+        examId: v.attemptId.examId,
+        metadata: v.metadata
+      }));
+
+    res.json({
+      success: true,
+      data: transformedViolations,
+      total: transformedViolations.length,
+      examId
+    });
+  } catch (error) {
+    console.error('Error fetching exam violations:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch exam violations',
+      error: error.message 
+    });
+  }
+});
+
+// Get violations for a specific student
+router.get('/violations/student/:studentId', authenticateToken, async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Check if user is instructor or admin
+    if (req.user.role !== 'instructor' && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Access denied. Instructors only.' 
+      });
+    }
+
+    // Find all attempts for this student
+    const attempts = await Attempt.find({ userId: studentId }).select('_id');
+    const attemptIds = attempts.map(a => a._id);
+
+    // Fetch violations for these attempts
+    const violations = await ProctoringLog.find({ attemptId: { $in: attemptIds } })
+      .populate({
+        path: 'attemptId',
+        populate: [
+          { path: 'userId', select: 'name email profile' },
+          { path: 'examId', select: 'title subject scheduledDate' }
+        ]
+      })
+      .sort({ timestamp: -1 })
+      .lean();
+
+    // Transform data
+    const transformedViolations = violations
+      .filter(v => v.attemptId)
+      .map(v => ({
+        _id: v._id,
+        eventType: v.eventType,
+        severity: v.severity,
+        description: v.description,
+        timestamp: v.timestamp,
+        studentId: v.attemptId.userId,
+        examId: v.attemptId.examId,
+        metadata: v.metadata
+      }));
+
+    res.json({
+      success: true,
+      data: transformedViolations,
+      total: transformedViolations.length,
+      studentId
+    });
+  } catch (error) {
+    console.error('Error fetching student violations:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch student violations',
+      error: error.message 
+    });
+  }
+});
+
 export default router;

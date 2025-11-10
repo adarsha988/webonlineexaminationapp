@@ -620,12 +620,22 @@ router.post('/student/:studentId/exam/:examId/submit', async (req, res) => {
 
     await studentExam.save();
 
+    // Get violation count for response
+    const violationCount = studentExam.violations?.length || 0;
+
     res.json({
       success: true,
       message: 'Exam submitted successfully',
+      result: {
+        score: totalScore,
+        totalMarks: maxScore,
+        percentage: studentExam.percentage,
+        violations: violationCount
+      },
       score: totalScore,
       maxScore: maxScore,
-      percentage: studentExam.percentage
+      percentage: studentExam.percentage,
+      violations: violationCount
     });
   } catch (error) {
     console.error('Error submitting exam:', error);
@@ -704,8 +714,14 @@ router.get('/student/:studentId/exam/:examId/result', async (req, res) => {
     const studentExam = await StudentExam.findOne({
       student: user._id,
       exam: examId,
-      status: 'completed'
-    }).populate('exam');
+      status: { $in: ['completed', 'submitted'] }
+    }).populate({
+      path: 'exam',
+      populate: {
+        path: 'questions',
+        model: 'Question'
+      }
+    });
 
     if (!studentExam) {
       return res.status(404).json({
@@ -714,9 +730,16 @@ router.get('/student/:studentId/exam/:examId/result', async (req, res) => {
       });
     }
 
+    // Include violations in the response
+    const resultData = {
+      ...studentExam.toObject(),
+      violationCount: studentExam.violations?.length || 0,
+      violations: studentExam.violations || []
+    };
+
     res.json({
       success: true,
-      data: studentExam
+      data: resultData
     });
   } catch (error) {
     console.error('Error fetching exam result:', error);

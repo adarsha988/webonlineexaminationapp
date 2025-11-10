@@ -26,9 +26,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/components/ui/use-toast';
 import { studentExamAPI, studentNotificationsAPI, studentAnalyticsAPI } from '@/api/studentExams';
-import NotificationDropdown from '@/components/student/NotificationDropdown';
 import ExamCard from '@/components/student/ExamCard';
 import StudentLayout from '@/layouts/StudentLayout';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -110,7 +109,7 @@ const StudentDashboard = () => {
         }),
         studentNotificationsAPI.getNotifications(studentId, 1, 5).catch(err => {
           console.error('❌ NOTIFICATIONS ERROR:', err);
-          return { data: [] };
+          return { data: [], unreadCount: 0 };
         })
       ]);
 
@@ -158,10 +157,11 @@ const StudentDashboard = () => {
     try {
       const response = await studentExamAPI.startExam(examId, user._id);
       if (response.success) {
-        navigate(`/student/exam/${examId}`);
+        // Route to verification page first - must grant camera/mic before exam
+        navigate(`/student/exam-verification/${examId}`);
         toast({
-          title: "Exam Started",
-          description: "Good luck with your exam!",
+          title: "Starting Exam",
+          description: "Please verify your camera and microphone first",
         });
       }
     } catch (error) {
@@ -181,34 +181,6 @@ const StudentDashboard = () => {
     navigate(`/student/exam/${examId}/result`);
   };
 
-  const refreshNotifications = async () => {
-    try {
-      const studentId = user._id || user.id;
-      const notificationsResponse = await studentNotificationsAPI.getNotifications(studentId, 1, 5);
-      
-      if (notificationsResponse.success || notificationsResponse.data) {
-        setNotifications(notificationsResponse.data || []);
-        setUnreadCount(notificationsResponse.unreadCount || 0);
-      }
-    } catch (error) {
-      console.error('Error refreshing notifications:', error);
-    }
-  };
-
-  const handleMarkAsRead = async (notificationId) => {
-    try {
-      await studentNotificationsAPI.markAsRead(user._id || user.id, notificationId);
-      // Refresh notifications after marking as read
-      await refreshNotifications();
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      toast({
-        title: "Error",
-        description: "Failed to mark notification as read",
-        variant: "destructive",
-      });
-    }
-  };
 
   const formatTimeRemaining = (seconds) => {
     if (!seconds) return '';
@@ -314,11 +286,6 @@ const StudentDashboard = () => {
                 transition={{ duration: 3, repeat: Infinity }}
               />
             </div>
-            <NotificationDropdown 
-              notifications={notifications}
-              unreadCount={unreadCount}
-              onMarkAsRead={refreshNotifications}
-            />
           </motion.div>
 
           {/* Animated Stats Cards */}

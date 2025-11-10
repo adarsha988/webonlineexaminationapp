@@ -1,27 +1,26 @@
 import React, { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Bell, Check, CheckCheck, Trash2, Eye, Calendar, Award, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { studentNotificationsAPI } from '@/api/studentExams';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user?._id && !user?.id) {
+        console.error('User not found');
+        return;
+      }
       await studentNotificationsAPI.markAsRead(user._id || user.id, notificationId);
       onMarkAsRead();
     } catch (error) {
@@ -36,7 +35,14 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
   const handleDeleteNotification = async (notificationId, event) => {
     event.stopPropagation();
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user?._id && !user?.id) {
+        toast({
+          title: "Error",
+          description: "User not found. Please log in again.",
+          variant: "destructive",
+        });
+        return;
+      }
       await studentNotificationsAPI.deleteNotification(user._id || user.id, notificationId);
       onMarkAsRead(); // Refresh notifications
       toast({
@@ -54,9 +60,16 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
 
   const handleMarkAllAsRead = async () => {
     try {
+      if (!user?._id && !user?.id) {
+        toast({
+          title: "Error",
+          description: "User not found. Please log in again.",
+          variant: "destructive",
+        });
+        return;
+      }
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      await studentNotificationsAPI.markAllAsRead(user._id);
+      await studentNotificationsAPI.markAllAsRead(user._id || user.id);
       onMarkAsRead();
       toast({
         title: "Success",
@@ -98,109 +111,201 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
     return date.toLocaleDateString();
   };
 
+  const handleViewNotification = (notification, event) => {
+    event.stopPropagation();
+    if (!notification.isRead) {
+      handleMarkAsRead(notification._id);
+    }
+    setIsOpen(false);
+    if (notification.link) {
+      navigate(notification.link);
+    }
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'exam':
-        return <Bell className="h-4 w-4 text-blue-500" />;
+        return <Calendar className="h-5 w-5 text-blue-500" />;
       case 'result':
-        return <Check className="h-4 w-4 text-green-500" />;
+        return <Award className="h-5 w-5 text-green-500" />;
       case 'system':
-        return <Bell className="h-4 w-4 text-gray-500" />;
+        return <AlertCircle className="h-5 w-5 text-purple-500" />;
       default:
-        return <Bell className="h-4 w-4 text-indigo-500" />;
+        return <Bell className="h-5 w-5 text-indigo-500" />;
     }
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
+    <div className="relative">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all shadow-md hover:shadow-lg border border-blue-100"
+      >
+        <Bell className="h-5 w-5 text-blue-600" />
+        {unreadCount > 0 && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 h-5 w-5 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg"
+          >
+            <span className="text-white text-xs font-bold">
               {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-white border-2 border-gray-200 shadow-2xl" align="end">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleMarkAllAsRead}
-              disabled={loading}
-              className="h-6 px-2 text-xs"
-            >
-              <CheckCheck className="h-3 w-3 mr-1" />
-              Mark all read
-            </Button>
-          )}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
-        {notifications.length > 0 ? (
-          <>
-            {notifications.slice(0, 5).map((notification) => (
-              <DropdownMenuItem
-                key={notification._id}
-                className={`cursor-pointer p-3 hover:bg-gray-50 transition-colors ${!notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'bg-white'}`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <div className="flex items-start gap-3 w-full">
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-medium text-sm text-gray-900 truncate">
-                        {notification.title}
-                      </h4>
-                      <div className="flex items-center gap-1">
-                        {!notification.isRead && (
-                          <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 hover:bg-red-100"
-                          onClick={(e) => handleDeleteNotification(notification._id, e)}
-                        >
-                          <Trash2 className="h-3 w-3 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatTimeAgo(notification.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-center cursor-pointer"
-              onClick={() => navigate('/student/notifications')}
-            >
-              <span className="text-sm text-blue-600 font-medium">View all notifications</span>
-            </DropdownMenuItem>
-          </>
-        ) : (
-          <div className="p-4 text-center text-gray-500">
-            <Bell className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm">No notifications</p>
-          </div>
+            </span>
+          </motion.div>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </motion.button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 z-40"
+            />
+
+            {/* Dropdown Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 p-4 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    <h3 className="font-bold text-lg">Notifications</h3>
+                  </div>
+                  {unreadCount > 0 && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleMarkAllAsRead}
+                      disabled={loading}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-medium transition-all backdrop-blur-sm"
+                    >
+                      <CheckCheck className="h-3 w-3" />
+                      Mark all read
+                    </motion.button>
+                  )}
+                </div>
+              </div>
+
+              {/* Notifications List */}
+              <div className="max-h-[500px] overflow-y-auto">
+                {notifications.length > 0 ? (
+                  <>
+                    {notifications.slice(0, 5).map((notification, index) => (
+                      <motion.div
+                        key={notification._id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all ${
+                          !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/10 border-l-4 border-l-blue-500' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Icon */}
+                          <motion.div
+                            whileHover={{ rotate: 360 }}
+                            transition={{ duration: 0.5 }}
+                            className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 flex items-center justify-center"
+                          >
+                            {getNotificationIcon(notification.type)}
+                          </motion.div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className="font-semibold text-sm text-gray-900 dark:text-white">
+                                {notification.title}
+                              </h4>
+                              {!notification.isRead && (
+                                <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                              {notification.message}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                                {formatTimeAgo(notification.createdAt)}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                {notification.link && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={(e) => handleViewNotification(notification, e)}
+                                    className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-medium rounded-lg shadow-md transition-all"
+                                  >
+                                    <Eye className="h-3 w-3" />
+                                    View
+                                  </motion.button>
+                                )}
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={(e) => handleDeleteNotification(notification._id, e)}
+                                  className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all group"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                                </motion.button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {/* View All Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setIsOpen(false);
+                        navigate('/student/notifications');
+                      }}
+                      className="w-full p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-all border-t border-gray-200 dark:border-gray-700"
+                    >
+                      <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        View All Notifications →
+                      </span>
+                    </motion.button>
+                  </>
+                ) : (
+                  <div className="p-8 text-center">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                      className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center"
+                    >
+                      <Bell className="h-8 w-8 text-gray-400" />
+                    </motion.div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      No notifications yet
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      We'll notify you when something arrives
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,11 +8,36 @@ import {
   Sparkles
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
+import NotificationDropdown from '../components/student/NotificationDropdown';
+import ViolationBell from '../components/student/ViolationBell';
+import { studentNotificationsAPI } from '@/api/studentExams';
 
 const StudentLayout = ({ children }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
+  // Fetch notifications when component mounts or user changes
+  useEffect(() => {
+    if (user && user._id) {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const studentId = user._id || user.id;
+      const response = await studentNotificationsAPI.getNotifications(studentId, 1, 10);
+      if (response.success || response.data) {
+        setNotifications(response.data || []);
+        setUnreadCount(response.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -59,7 +84,7 @@ const StudentLayout = ({ children }) => {
               </div>
             </motion.div>
             
-            {/* User Info & Logout */}
+            {/* User Info, Notifications & Logout */}
             <div className="flex items-center gap-3">
               {/* User Avatar & Name */}
               <motion.div 
@@ -83,6 +108,16 @@ const StudentLayout = ({ children }) => {
                   <span className="text-xs text-gray-500">Student</span>
                 </div>
               </motion.div>
+
+              {/* Notification Dropdown */}
+              <NotificationDropdown 
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={fetchNotifications}
+              />
+
+              {/* Violation Bell */}
+              <ViolationBell />
 
               {/* Logout Button */}
               <motion.button

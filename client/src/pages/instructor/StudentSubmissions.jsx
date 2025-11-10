@@ -168,19 +168,26 @@ const StudentSubmissions = () => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-gray-600">Score</p>
-            <p className={`text-lg font-semibold ${getScoreColor(submission.score, submission.totalMarks || submission.examId?.totalMarks)}`}>
-              {submission.score !== undefined ? `${submission.score}/${submission.totalMarks || submission.examId?.totalMarks}` : 'Not graded'}
+            <p className={`text-lg font-semibold ${getScoreColor(submission.score, submission.totalMarks || submission.maxScore || submission.examId?.totalMarks)}`}>
+              {submission.score !== undefined && submission.score !== null ? 
+                `${submission.score}/${submission.totalMarks || submission.maxScore || submission.examId?.totalMarks || 0}` : 
+                'Not graded'}
             </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Percentage</p>
-            <p className="text-lg font-semibold text-gray-900">{submission.percentage || 0}%</p>
+            <p className="text-lg font-semibold text-gray-900">{Math.round(submission.percentage || 0)}%</p>
           </div>
-        </div>
-
-        <div className="mb-4">
-          <p className="text-sm text-gray-600">Submitted At</p>
-          <p className="text-sm text-gray-900">{formatDate(submission.submittedAt)}</p>
+          <div>
+            <p className="text-sm text-gray-600">Violations</p>
+            <p className={`text-lg font-semibold ${(submission.violations?.length || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {submission.violations?.length || 0}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Submitted At</p>
+            <p className="text-sm text-gray-900">{formatDate(submission.submittedAt)}</p>
+          </div>
         </div>
 
         <div className="flex gap-2">

@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { checkAuth } from '@/store/authSlice';
+import { ViolationProvider } from '@/contexts/ViolationContext';
 
 // Lazy load components for better performance
 const GuestHomepage = lazy(() => import('@/pages/home/GuestHomepage'));
@@ -17,6 +18,8 @@ const ExamResult = lazy(() => import('@/pages/student/ExamResult'));
 const StudentResults = lazy(() => import('@/pages/student/Results'));
 // @ts-ignore
 const StudentExamsList = lazy(() => import('@/pages/student/ExamsList'));
+// @ts-ignore
+const Notifications = lazy(() => import('@/pages/student/Notifications'));
 // Temporarily using regular import to debug dynamic import issue
 import InstructorDashboard from '@/pages/instructor/Dashboard';
 const InstructorExamCreator = lazy(() => import('@/pages/instructor/ExamCreator'));
@@ -45,6 +48,9 @@ const StudentCompletedExams = lazy(() => import('@/pages/student/CompletedExams'
 const ExamGrading = lazy(() => import('@/pages/instructor/ExamGrading'));
 const ProctoringReport = lazy(() => import('@/pages/instructor/ProctoringReport'));
 const ExamSecurityCheck = lazy(() => import('@/pages/student/ExamSecurityCheck'));
+const ExamVerification = lazy(() => import('@/pages/student/ExamVerification'));
+const MyViolations = lazy(() => import('@/pages/student/MyViolations'));
+const ViolationDashboard = lazy(() => import('@/pages/instructor/ViolationDashboard'));
 
 function AppRoutes() {
   return (
@@ -58,6 +64,16 @@ function AppRoutes() {
       <Route path="/student/exam-security/:examId" element={
         <ProtectedRoute allowedRoles={['student']}>
           <ExamSecurityCheck />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/exam-verification/:examId" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <ExamVerification />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/violations" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <MyViolations />
         </ProtectedRoute>
       } />
       <Route path="/student/exam/:id" element={
@@ -88,6 +104,11 @@ function AppRoutes() {
       <Route path="/student/exams" element={
         <ProtectedRoute allowedRoles={['student']}>
           <StudentExamsList />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/notifications" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <Notifications />
         </ProtectedRoute>
       } />
       
@@ -157,9 +178,14 @@ function AppRoutes() {
           <ExamGrading />
         </ProtectedRoute>
       } />
-      <Route path="/instructor/proctoring-report/:submissionId" element={
-        <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+      <Route path="/instructor/proctoring/:attemptId" element={
+        <ProtectedRoute allowedRoles={['instructor']}>
           <ProctoringReport />
+        </ProtectedRoute>
+      } />
+      <Route path="/instructor/violations" element={
+        <ProtectedRoute allowedRoles={['instructor']}>
+          <ViolationDashboard />
         </ProtectedRoute>
       } />
       
@@ -245,11 +271,13 @@ function App() {
 
   return (
     <TooltipProvider>
-      <ErrorBoundary>
-        <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
-          <AppRoutes />
-        </Suspense>
-      </ErrorBoundary>
+      <ViolationProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+            <AppRoutes />
+          </Suspense>
+        </ErrorBoundary>
+      </ViolationProvider>
     </TooltipProvider>
   );
 }
