@@ -711,24 +711,32 @@ router.get('/student/:studentId/exam/:examId/result', async (req, res) => {
       });
     }
 
+    // Try both field name variations
     const studentExam = await StudentExam.findOne({
-      student: user._id,
-      exam: examId,
+      $or: [
+        { student: user._id, exam: examId },
+        { studentId: user._id, examId: examId }
+      ],
       status: { $in: ['completed', 'submitted'] }
-    }).populate({
-      path: 'exam',
+    })
+    .populate({
+      path: 'exam examId',
       populate: {
         path: 'questions',
         model: 'Question'
       }
-    });
+    })
+    .populate('student studentId', 'name email');
 
     if (!studentExam) {
+      console.log('❌ Completed exam not found for:', { studentId: user._id, examId, status: 'completed/submitted' });
       return res.status(404).json({
         success: false,
         message: 'Completed exam not found'
       });
     }
+
+    console.log('✅ Found exam result:', { examId, studentId: user._id, score: studentExam.score });
 
     // Include violations in the response
     const resultData = {

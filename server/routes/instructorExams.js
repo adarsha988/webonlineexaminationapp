@@ -388,7 +388,9 @@ router.put('/:id', authenticateToken, requireInstructor, async (req, res) => {
       id,
       updateFields,
       { new: true, runValidators: true }
-    ).populate('createdBy', 'name email');
+    )
+    .populate('createdBy', 'name email')
+    .populate('questions');
 
     res.json({
       success: true,
@@ -399,10 +401,13 @@ router.put('/:id', authenticateToken, requireInstructor, async (req, res) => {
         subject: updatedExam.subject,
         description: updatedExam.description,
         totalMarks: updatedExam.totalMarks,
+        passingMarks: updatedExam.passingMarks,
         duration: updatedExam.duration,
         status: updatedExam.status,
         scheduledDate: updatedExam.scheduledDate,
         endDate: updatedExam.endDate,
+        questions: updatedExam.questions,
+        settings: updatedExam.settings,
         createdAt: updatedExam.createdAt,
         updatedAt: updatedExam.updatedAt
       }

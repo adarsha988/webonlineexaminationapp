@@ -212,26 +212,36 @@ router.get('/analytics/student/:studentId/comparative/:examId', async (req, res)
   try {
     const { studentId, examId } = req.params;
 
-    // Get student's performance
+    // Get student's performance - handle both field variations
     const studentPerformance = await StudentExam.findOne({
-      studentId,
-      examId,
-      status: { $in: ['submitted', 'auto_submitted'] }
-    }).populate('examId', 'title subject totalMarks');
+      $or: [
+        { studentId, examId },
+        { student: studentId, exam: examId }
+      ],
+      status: { $in: ['submitted', 'auto_submitted', 'completed'] }
+    })
+    .populate('examId exam', 'title subject totalMarks')
+    .populate('exam examId', 'title subject totalMarks');
 
     if (!studentPerformance) {
+      console.log('❌ Student performance not found for comparative analysis:', { studentId, examId });
       return res.status(404).json({
         success: false,
         message: 'Student performance not found for this exam'
       });
     }
 
-    // Get class statistics
+    console.log('✅ Found student performance for comparative:', { studentId, examId, score: studentPerformance.score });
+
+    // Get class statistics - check both field variations
     const classStats = await StudentExam.aggregate([
       {
         $match: {
-          examId: new mongoose.Types.ObjectId(examId),
-          status: { $in: ['submitted', 'auto_submitted'] },
+          $or: [
+            { examId: new mongoose.Types.ObjectId(examId) },
+            { exam: new mongoose.Types.ObjectId(examId) }
+          ],
+          status: { $in: ['submitted', 'auto_submitted', 'completed'] },
           score: { $ne: null }
         }
       },
@@ -247,16 +257,19 @@ router.get('/analytics/student/:studentId/comparative/:examId', async (req, res)
       }
     ]);
 
+    // Get the exam object (handle both field names)
+    const examData = studentPerformance.examId || studentPerformance.exam;
+
     if (classStats.length === 0) {
       return res.json({
         success: true,
         data: {
-          studentScore: studentPerformance.percentage,
+          studentScore: studentPerformance.percentage || 0,
           classAverage: 0,
           percentile: 100,
           rank: 1,
           totalStudents: 1,
-          exam: studentPerformance.examId
+          exam: examData
         }
       });
     }
@@ -282,7 +295,7 @@ router.get('/analytics/student/:studentId/comparative/:examId', async (req, res)
         percentile,
         rank,
         totalStudents: stats.totalStudents,
-        exam: studentPerformance.examId
+        exam: examData
       }
     });
   } catch (error) {

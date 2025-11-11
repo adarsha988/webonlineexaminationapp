@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { FileText, Users, TrendingUp, Clock, Plus, Database, Eye, Edit, CheckCircle, Award, Send } from 'lucide-react';
+import { FileText, Users, TrendingUp, Clock, Plus, Database, Eye, Edit, CheckCircle, Award, Send, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 import InstructorLayout from '../../layouts/InstructorLayout';
 import { instructorExamAPI } from '../../api/instructorExams';
 
@@ -74,20 +75,47 @@ const InstructorDashboard = () => {
   const { stats, recentExams } = dashboardData;
 
   const StatCard = ({ icon: Icon, title, value, iconColor, gradient }) => (
-    <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-gray-50">
-      <div className={`absolute top-0 right-0 w-32 h-32 ${gradient} opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity`}></div>
-      <CardContent className="p-6 relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">{title}</p>
-            <p className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">{value}</p>
+    <motion.div
+      whileHover={{ scale: 1.05, y: -5 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      <Card className="group relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white to-gray-50">
+        <motion.div
+          className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-10 rounded-full blur-3xl`}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        />
+        <CardContent className="p-6 relative z-10">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2"
+              >
+                {title}
+              </motion.p>
+              <motion.p 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 0.3 }}
+                className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent"
+              >
+                {value}
+              </motion.p>
+            </div>
+            <motion.div 
+              className={`p-4 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg`}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <Icon className="h-8 w-8 text-white" />
+            </motion.div>
           </div>
-          <div className={`p-4 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-            <Icon className="h-8 w-8 text-white" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   const ExamCard = ({ exam }) => {
@@ -206,27 +234,78 @@ const InstructorDashboard = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-          {/* Header */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
-            <div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">Instructor Dashboard</h1>
-              <p className="text-gray-600 text-lg font-medium">Manage your examinations and track student progress</p>
-            </div>
-            <div className="flex gap-3">
-              <Link to="/instructor/exams">
-                <Button variant="outline" className="border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <Eye className="h-4 w-4 mr-2" />
-                  View All Exams
-                </Button>
-              </Link>
-              <Link to="/instructor/exam-creation">
-                <Button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Exam
-                </Button>
-              </Link>
-            </div>
-          </div>
+          {/* Animated Header with Enhanced Texture */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative mb-8"
+          >
+            {/* Background Texture Card */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-pink-50/50 rounded-3xl blur-3xl"></div>
+            <motion.div
+              className="relative bg-gradient-to-br from-white/80 via-indigo-50/40 to-purple-50/60 backdrop-blur-sm rounded-2xl border-2 border-indigo-100/50 shadow-2xl overflow-hidden p-6 sm:p-8"
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-200/20 to-purple-200/20 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-cyan-200/20 rounded-full blur-3xl"></div>
+              
+              <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="relative flex-1">
+                  <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <motion.div
+                        className="w-2 h-12 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                        animate={{ height: [48, 56, 48] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                      <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        Welcome back, {user?.name}! 🎓
+                      </h1>
+                    </div>
+                    <p className="text-gray-600 mt-2 text-sm sm:text-base font-medium ml-5">
+                      ✨ Manage your examinations and track student progress
+                    </p>
+                  </motion.div>
+                  <motion.div
+                    className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-3xl opacity-20"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.2, 0.3, 0.2]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                </div>
+                
+                {/* Enhanced Action Buttons */}
+                <div className="flex gap-3 items-center">
+                  <Link to="/instructor/exams">
+                    <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+                      <Button variant="outline" className="relative overflow-hidden border-2 border-indigo-300 hover:border-indigo-500 bg-white/80 backdrop-blur-sm hover:bg-indigo-50 transition-all duration-300 shadow-lg hover:shadow-xl group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-100/0 via-purple-100/50 to-indigo-100/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                        <Eye className="h-4 w-4 mr-2 relative z-10" />
+                        <span className="relative z-10 font-semibold">View All Exams</span>
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link to="/instructor/exam-creation">
+                    <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+                      <Button className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg shadow-indigo-300 hover:shadow-2xl hover:shadow-purple-400 transition-all duration-300 border-2 border-white/20 backdrop-blur-sm group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                        <Plus className="h-4 w-4 mr-2 relative z-10" />
+                        <span className="relative z-10 font-bold">Create Exam</span>
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

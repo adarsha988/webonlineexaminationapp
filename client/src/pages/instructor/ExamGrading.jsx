@@ -23,7 +23,8 @@ import {
   AlertCircle,
   Save,
   FileText,
-  Award
+  Award,
+  Send
 } from 'lucide-react';
 import InstructorLayout from '@/layouts/InstructorLayout';
 import api from '../../api/axios';
@@ -37,6 +38,7 @@ const ExamGrading = () => {
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [grading, setGrading] = useState(false);
+  const [sendingReport, setSendingReport] = useState(false);
   const [gradedAnswers, setGradedAnswers] = useState({});
   const [feedback, setFeedback] = useState('');
   const [error, setError] = useState(null);
@@ -137,10 +139,8 @@ const ExamGrading = () => {
           description: `Final score: ${response.data.data.score}/${submission.examId.totalMarks} (${response.data.data.percentage}%)`,
         });
         
-        // Navigate back to submissions list after 1.5 seconds
-        setTimeout(() => {
-          navigate(`/instructor/completed-exams/${submission.examId._id}/submissions`);
-        }, 1500);
+        // Refresh submission data to update grading status
+        await fetchSubmissionDetails();
       } else {
         throw new Error('Failed to submit grading');
       }
@@ -156,14 +156,50 @@ const ExamGrading = () => {
     }
   };
 
+  const handleSendReport = async () => {
+    try {
+      setSendingReport(true);
+      
+      const customMessage = `Your exam "${submission.examId.title}" has been graded.\n\nScore: ${submission.score}/${submission.examId.totalMarks} (${submission.percentage}%)\n\nInstructor Feedback: ${feedback || 'No additional feedback provided.'}`;
+      
+      const response = await api.post(`/api/instructor/grading/submission/${submissionId}/send-report`, {
+        message: customMessage,
+        instructorId: user._id || user.id
+      });
+
+      if (response.data && response.data.success) {
+        toast({
+          title: "Report Sent!",
+          description: `Exam results sent to ${submission.studentId.name}`,
+        });
+        
+        // Navigate back after success
+        setTimeout(() => {
+          navigate(`/instructor/completed-exams/${submission.examId._id}/submissions`);
+        }, 1500);
+      } else {
+        throw new Error('Failed to send report');
+      }
+    } catch (error) {
+      console.error('Error sending report:', error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to send report",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingReport(false);
+    }
+  };
+
   const getQuestionTypeIcon = (type) => {
     switch (type) {
-      case 'multiple_choice':
+      case 'mcq':
         return <CheckCircle className="h-4 w-4" />;
-      case 'true_false':
+      case 'truefalse':
         return <XCircle className="h-4 w-4" />;
-      case 'short_answer':
-      case 'essay':
+      case 'short':
+      case 'long':
         return <FileText className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
@@ -236,16 +272,29 @@ const ExamGrading = () => {
             </div>
           </div>
           
-          {pendingGrading > 0 && (
-            <Button 
-              onClick={handleSubmitGrading}
-              disabled={grading}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {grading ? 'Saving...' : 'Complete Grading'}
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {pendingGrading > 0 && (
+              <Button 
+                onClick={handleSubmitGrading}
+                disabled={grading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {grading ? 'Saving...' : 'Complete Grading'}
+              </Button>
+            )}
+            
+            {pendingGrading === 0 && submission.gradingStatus === 'complete' && (
+              <Button 
+                onClick={handleSendReport}
+                disabled={sendingReport}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {sendingReport ? 'Sending...' : 'Send Report to Student'}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Submission Overview */}
@@ -332,7 +381,7 @@ const ExamGrading = () => {
                     </div>
 
                     {/* Correct Answer (for auto-graded questions) */}
-                    {(answer.questionType === 'multiple_choice' || answer.questionType === 'true_false') && (
+                    {(answer.questionType === 'mcq' || answer.questionType === 'truefalse') && (
                       <div>
                         <h4 className="font-medium text-gray-700 mb-2">Correct Answer:</h4>
                         <div className="p-3 bg-green-50 rounded-lg text-green-800">

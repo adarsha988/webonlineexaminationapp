@@ -263,7 +263,7 @@ router.post('/submission/:submissionId/send-report', authenticateToken, async (r
     
     const notification = await Notification.create({
       userId: submission.studentId._id,
-      type: 'exam_result',
+      type: 'exam', // Valid enum value: 'system', 'user', 'exam', 'security'
       title: `Exam Results: ${submission.examId.title}`,
       message: message || `Your exam "${submission.examId.title}" has been graded. Score: ${submission.score}/${submission.totalMarks} (${submission.percentage}%)`,
       link: `/student/exam/${submission.examId._id}/result`,

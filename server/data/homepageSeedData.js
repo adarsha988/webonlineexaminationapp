@@ -12,19 +12,12 @@ export async function seedHomepageData() {
     const testimonialCount = await Testimonial.countDocuments();
     const quizCount = await Quiz.countDocuments();
 
-    if (collegeCount > 0 && testimonialCount > 0 && quizCount > 0) {
+    if (collegeCount > 0 || testimonialCount > 0 || quizCount > 0) {
       console.log('✅ Homepage data already exists, skipping seeding');
       return;
     }
 
-    // Clear existing data
-    await Promise.all([
-      College.deleteMany({}),
-      Testimonial.deleteMany({}),
-      Quiz.deleteMany({})
-    ]);
-
-    console.log('🗑️ Cleared existing homepage data');
+    console.log('📊 No existing homepage data found, seeding initial data...');
 
     // 1. Create Colleges
     const colleges = await College.insertMany([

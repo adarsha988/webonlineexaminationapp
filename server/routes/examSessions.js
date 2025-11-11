@@ -276,7 +276,8 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
         let feedback = '';
         
         // Auto-grading logic based on question type
-        if (question.type === 'multiple_choice' || question.type === 'true_false') {
+        // Database uses: 'mcq', 'truefalse', 'short', 'long'
+        if (question.type === 'mcq' || question.type === 'truefalse') {
           // MCQ and True/False - Auto-graded
           if (answer.answer === question.correctAnswer) {
             answerScore = question.marks;
@@ -286,25 +287,18 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
             feedback = `Incorrect. Correct answer: ${question.correctAnswer}`;
           }
           autoGradedMarks += answerScore;
-        } else if (question.type === 'short_answer' || question.type === 'essay') {
-          // Essay/Short Answer - Pending manual grading
+        } else if (question.type === 'short' || question.type === 'long') {
+          // Short/Long Answer - Pending manual grading
           answerScore = 0; // Will be graded manually
           gradingStatus = 'pending_manual_grading';
           feedback = 'Answer submitted. Awaiting instructor review.';
           pendingManualGrading += question.marks;
-        } else if (question.type === 'fill_blank') {
-          // Fill in the blank - Case-insensitive auto-grading
-          const studentAnswer = answer.answer?.toString().toLowerCase().trim();
-          const correctAnswer = question.correctAnswer?.toString().toLowerCase().trim();
-          
-          if (studentAnswer === correctAnswer) {
-            answerScore = question.marks;
-            feedback = 'Correct answer!';
-          } else {
-            answerScore = 0;
-            feedback = `Incorrect. Correct answer: ${question.correctAnswer}`;
-          }
-          autoGradedMarks += answerScore;
+        } else {
+          // Unknown question type - mark for manual grading
+          answerScore = 0;
+          gradingStatus = 'pending_manual_grading';
+          feedback = 'Answer submitted. Awaiting instructor review.';
+          pendingManualGrading += question.marks;
         }
         
         totalScore += answerScore;
@@ -403,15 +397,20 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
 router.post('/:examId/violation', authenticateToken, async (req, res) => {
   try {
     const { examId } = req.params;
-    const { studentId, violationType, description, timestamp } = req.body;
+    const { studentId, violationType, description, timestamp, severity } = req.body;
+    
+    console.log(`⚠️ Violation reported: ${violationType} for student ${studentId} in exam ${examId}`);
     
     // Find the student exam session
     const studentExam = await StudentExam.findOne({ 
-      studentId: studentId, 
-      examId: examId 
+      $or: [
+        { studentId: studentId, examId: examId },
+        { student: studentId, exam: examId }
+      ]
     });
     
     if (!studentExam) {
+      console.log('❌ No active session found for violation report');
       return res.status(404).json({ success: false, message: 'No active session found' });
     }
     
@@ -420,22 +419,56 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
       studentExam.violations = [];
     }
     
-    studentExam.violations.push({
+    const violationData = {
       type: violationType,
       description: description || 'Proctoring violation detected',
       timestamp: timestamp || new Date(),
-      severity: 'medium' // Default severity
-    });
+      severity: severity || 'medium'
+    };
     
+    studentExam.violations.push(violationData);
     await studentExam.save();
+    
+    console.log(`✅ Violation saved to StudentExam: ${violationType}`);
+    
+    // Also create ProctoringLog entry for better tracking
+    try {
+      const ProctoringLog = (await import('../models/proctoringLog.model.js')).default;
+      const Attempt = (await import('../models/attempt.model.js')).default;
+      
+      // Find or create attempt
+      let attempt = await Attempt.findOne({
+        userId: studentId,
+        examId: examId
+      });
+      
+      if (attempt) {
+        await ProctoringLog.create({
+          attemptId: attempt._id,
+          eventType: violationType,
+          severity: severity || 'medium',
+          description: description || 'Proctoring violation detected',
+          timestamp: timestamp || new Date(),
+          metadata: {
+            source: 'exam_session',
+            studentExamId: studentExam._id
+          }
+        });
+        console.log(`✅ Violation logged to ProctoringLog`);
+      }
+    } catch (logError) {
+      console.error('⚠️ Failed to create ProctoringLog entry:', logError.message);
+      // Don't fail the request if logging fails
+    }
     
     res.json({ 
       success: true, 
-      message: 'Violation reported successfully'
+      message: 'Violation reported successfully',
+      violationCount: studentExam.violations.length
     });
     
   } catch (error) {
-    console.error('Error reporting violation:', error);
+    console.error('❌ Error reporting violation:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error reporting violation', 

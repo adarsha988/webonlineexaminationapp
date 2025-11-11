@@ -20,6 +20,8 @@ import seedStudentDashboard from "./data/seedStudents.js";
 import { seedHomepageData } from "./data/homepageSeedData.js";
 // @ts-ignore
 import { seedActivityData } from "./data/activitySeedData.js";
+// @ts-ignore
+import { seedProctoringViolations } from "./data/proctoringViolationsSeed.js";
 
 const app = express();
 
@@ -114,6 +116,7 @@ app.use((req, res, next) => {
         await seedStudentDashboard();
         await seedComprehensiveData();
         await seedHomepageData();
+        await seedProctoringViolations();
         await NotificationService.seedNotifications();
         log('✅ Data seeding completed');
       } catch (seedError) {

@@ -548,8 +548,21 @@ router.get('/violations', authenticateToken, async (req, res) => {
       });
     }
 
-    // Fetch all proctoring logs with populated student and exam information
-    const violations = await ProctoringLog.find({})
+    // Import StudentExam model
+    const StudentExam = (await import('../models/studentExam.model.js')).default;
+    
+    // Fetch violations from StudentExam records with populated data
+    const studentExams = await StudentExam.find({ 
+      violations: { $exists: true, $ne: [] } 
+    })
+      .populate('studentId', 'name email')
+      .populate('student', 'name email')
+      .populate('examId', 'title subject scheduledDate')
+      .populate('exam', 'title subject scheduledDate')
+      .lean();
+
+    // Also fetch from ProctoringLog for backward compatibility
+    const proctoringLogs = await ProctoringLog.find({})
       .populate({
         path: 'attemptId',
         populate: [
@@ -558,12 +571,34 @@ router.get('/violations', authenticateToken, async (req, res) => {
         ]
       })
       .sort({ timestamp: -1 })
-      .limit(1000) // Limit to last 1000 violations
+      .limit(1000)
       .lean();
 
-    // Transform data for frontend
-    const transformedViolations = violations
-      .filter(v => v.attemptId) // Only include violations with valid attempts
+    // Transform StudentExam violations
+    const studentExamViolations = [];
+    studentExams.forEach(se => {
+      if (se.violations && se.violations.length > 0) {
+        se.violations.forEach(v => {
+          const student = se.studentId || se.student;
+          const exam = se.examId || se.exam;
+          
+          studentExamViolations.push({
+            _id: `${se._id}-${v.timestamp}`,
+            eventType: v.type || 'unknown',
+            severity: v.severity || 'medium',
+            description: v.description || 'Proctoring violation detected',
+            timestamp: v.timestamp,
+            studentId: student,
+            examId: exam,
+            metadata: {}
+          });
+        });
+      }
+    });
+
+    // Transform ProctoringLog violations
+    const proctoringLogViolations = proctoringLogs
+      .filter(v => v.attemptId)
       .map(v => ({
         _id: v._id,
         eventType: v.eventType,
@@ -575,10 +610,17 @@ router.get('/violations', authenticateToken, async (req, res) => {
         metadata: v.metadata
       }));
 
+    // Combine both sources
+    const allViolations = [...studentExamViolations, ...proctoringLogViolations]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 1000); // Limit to 1000 most recent
+
+    console.log(`📊 Found ${allViolations.length} violations (${studentExamViolations.length} from exams, ${proctoringLogViolations.length} from logs)`);
+
     res.json({
       success: true,
-      data: transformedViolations,
-      total: transformedViolations.length
+      data: allViolations,
+      total: allViolations.length
     });
   } catch (error) {
     console.error('Error fetching violations:', error);

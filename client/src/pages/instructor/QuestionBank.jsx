@@ -332,24 +332,58 @@ const QuestionBank = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/instructor/dashboard')}
-            className="flex items-center gap-2 hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Question Bank</h1>
-            <p className="text-gray-600 mt-1">Create and manage your questions</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 relative overflow-hidden">
+      {/* Animated Background Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.1, 1], rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.div 
+          className="absolute top-1/2 -left-40 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-blue-500/20 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 15, repeat: Infinity }}
+        />
+      </div>
+
+      <div className="relative z-10 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+        {/* Animated Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6"
+        >
+          <div className="flex items-center gap-4 relative">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/instructor/dashboard')}
+              className="flex items-center gap-2 hover:bg-indigo-50 border-2 border-indigo-200 hover:border-indigo-400 transition-all"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <motion.h1 
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent"
+              >
+                Question Bank 💎
+              </motion.h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">Create and manage your questions</p>
+            </div>
+            <motion.div
+              className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-3xl opacity-20"
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.3, 0.2]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
           </div>
-        </div>
-        <div className="flex gap-3">
+          <div className="flex gap-3">
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
@@ -871,10 +905,10 @@ const QuestionBank = () => {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+        </motion.div>
 
-      {/* Questions Section */}
-      <div className="space-y-4">
+        {/* Questions Section */}
+        <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
             <p className="text-gray-500">Loading questions...</p>
@@ -983,6 +1017,7 @@ const QuestionBank = () => {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

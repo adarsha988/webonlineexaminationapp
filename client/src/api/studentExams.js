@@ -56,7 +56,7 @@ export const studentExamAPI = {
   submitExam: async (examId, studentId, finalAnswers = []) => {
     const response = await api.post(`${API_BASE_URL}/exam-sessions/${examId}/submit`, {
       studentId,
-      finalAnswers
+      answers: finalAnswers // Backend expects 'answers' not 'finalAnswers'
     });
     return response.data;
   },

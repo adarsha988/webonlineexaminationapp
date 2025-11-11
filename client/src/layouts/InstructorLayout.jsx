@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, User, Home, FileText, CheckCircle, Database, Plus } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
 const InstructorLayout = ({ children }) => {
@@ -10,11 +9,11 @@ const InstructorLayout = ({ children }) => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/instructor/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/instructor/exams', label: 'All Exams', icon: FileText },
-    { path: '/instructor/completed-exams', label: 'Completed Exams', icon: CheckCircle },
-    { path: '/instructor/question-bank', label: 'Question Bank', icon: Database },
-    { path: '/instructor/exam-creation', label: 'Create Exam', icon: Plus },
+    { path: '/instructor/dashboard', label: 'DASHBOARD' },
+    { path: '/instructor/exams', label: 'ALL EXAMS' },
+    { path: '/instructor/completed-exams', label: 'COMPLETED EXAMS' },
+    { path: '/instructor/question-bank', label: 'QUESTION BANK' },
+    { path: '/instructor/exam-creation', label: 'CREATE EXAM' },
   ];
 
   const isActive = (path) => {
@@ -22,49 +21,48 @@ const InstructorLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <h1 className="text-xl font-semibold text-gray-900">Instructor Portal</h1>
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 shadow-2xl">
+        <div className="max-w-full px-8">
+          <div className="flex justify-between items-center py-6">
+            {/* Left side - Brand and Navigation */}
+            <div className="flex items-center space-x-12">
+              <h1 className="text-3xl font-black text-white tracking-tight uppercase">
+                INSTRUCTOR PORTAL
+              </h1>
               
               {/* Navigation Links */}
-              <div className="hidden md:flex items-center space-x-1">
+              <div className="hidden lg:flex items-center space-x-2">
                 {navItems.map((item) => {
-                  const Icon = item.icon;
                   const active = isActive(item.path);
                   return (
                     <Link
                       key={item.path}
                       to={item.path}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-6 py-3 text-sm font-extrabold tracking-wide transition-all duration-300 rounded-md ${
                         active
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-white text-indigo-700 shadow-lg transform scale-105'
+                          : 'text-white hover:bg-white/20 hover:scale-105'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
+                      {item.label}
                     </Link>
                   );
                 })}
               </div>
             </div>
             
-            {/* User Info & Logout */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-700">
-                <User className="w-4 h-4" />
-                <span className="text-sm font-medium">{user?.name}</span>
+            {/* Right side - User Info & Logout */}
+            <div className="flex items-center space-x-6">
+              <div className="px-6 py-2 bg-white/10 backdrop-blur-sm rounded-lg border-2 border-white/30">
+                <span className="text-sm font-bold text-white uppercase tracking-wider">{user?.name}</span>
               </div>
               <button
                 onClick={() => setIsLogoutModalOpen(true)}
-                className="flex items-center space-x-2 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-wide rounded-md transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105"
                 title="Logout"
               >
-                <LogOut className="w-4 h-4" />
-                <span className="text-sm font-medium">Logout</span>
+                LOGOUT
               </button>
             </div>
           </div>

@@ -14,19 +14,17 @@ export async function seedComprehensiveData() {
   try {
     console.log('🌱 Starting comprehensive data seeding...');
 
-    // Clear existing data
-    await Promise.all([
-      User.deleteMany({}),
-      Department.deleteMany({}),
-      Exam.deleteMany({}),
-      Question.deleteMany({}),
-      StudentExam.deleteMany({}),
-      Notification.deleteMany({}),
-      Activity.deleteMany({}),
-      SharedBank.deleteMany({})
-    ]);
+    // Check if data already exists
+    const existingUsers = await User.countDocuments();
+    const existingQuestions = await Question.countDocuments();
+    const existingExams = await Exam.countDocuments();
+    
+    if (existingUsers > 0 || existingQuestions > 0 || existingExams > 0) {
+      console.log('✅ Data already exists, skipping comprehensive seeding to preserve user data');
+      return;
+    }
 
-    console.log('🗑️ Cleared existing data');
+    console.log('📊 No existing data found, seeding initial data...');
 
     // 1. Create Departments
     const departments = await Department.insertMany([

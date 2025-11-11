@@ -178,7 +178,7 @@ function AppRoutes() {
           <ExamGrading />
         </ProtectedRoute>
       } />
-      <Route path="/instructor/proctoring/:attemptId" element={
+      <Route path="/instructor/proctoring-report/:submissionId" element={
         <ProtectedRoute allowedRoles={['instructor']}>
           <ProctoringReport />
         </ProtectedRoute>
