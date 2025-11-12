@@ -18,7 +18,9 @@ interface GuestHomepageProps {
 }
 
 const GuestHomepage = ({ initialAuthMode = 'signup' }: GuestHomepageProps) => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(!!initialAuthMode);
+  // Only auto-open modal if user specifically navigated to /login route
+  const shouldAutoOpen = window.location.pathname === '/login' && initialAuthMode === 'login';
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(shouldAutoOpen);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialAuthMode || 'login');
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();

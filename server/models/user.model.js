@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
     default: null
+  },
+  tempPassword: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

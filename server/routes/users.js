@@ -145,22 +145,32 @@ router.get('/:id/password', async (req, res) => {
     
     // For demo purposes, we'll show a readable password
     // In a real system, you might store passwords in a reversible format for admin access
-    // or maintain a separate admin-viewable password field
     let displayPassword = user.password;
     
-    // If password looks like a hash (starts with $2b$ for bcrypt), show a demo password
+    // If password looks like a hash (starts with $2b$ for bcrypt), show appropriate password
     if (user.password && user.password.startsWith('$2b$')) {
-      // For demo: generate a consistent password based on user email
-      const emailHash = user.email.split('@')[0];
-      displayPassword = `${emailHash}123`;
+      if (user.tempPassword) {
+        // Show the temporary password if it exists (from password reset)
+        displayPassword = user.tempPassword;
+      } else {
+        // For demo: generate a consistent password based on user email for original passwords
+        const emailHash = user.email.split('@')[0];
+        displayPassword = `${emailHash}123`;
+      }
     }
     
     // Log admin access to user password
-    await new Activity({
-      type: 'admin_password_view',
-      description: `Admin viewed password for user: ${user.name} (${user.email})`,
-      metadata: { targetUserId: user._id, targetUserEmail: user.email }
-    }).save();
+    try {
+      await new Activity({
+        user: user._id,
+        type: 'user_login',
+        description: `Admin viewed password for user: ${user.name} (${user.email})`,
+        metadata: { targetUserId: user._id, targetUserEmail: user.email }
+      }).save();
+    } catch (activityError) {
+      console.log('Activity logging failed:', activityError.message);
+      // Continue without failing the password request
+    }
     
     res.json({ 
       password: displayPassword,
@@ -463,8 +473,9 @@ router.post('/reset-password/:id', async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(tempPassword, saltRounds);
     
-    // Update user password in database
+    // Update user password in database and store temp password for admin viewing
     user.password = hashedPassword;
+    user.tempPassword = tempPassword;
     await user.save();
     
     // Log admin activity
