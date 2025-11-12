@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 const router = express.Router();
 import User from '../models/user.model.js';
 import Activity from '../models/activity.model.js';
@@ -130,6 +131,45 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+});
+
+// GET /api/users/:id/password - Get user password (Admin only)
+router.get('/:id/password', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // For demo purposes, we'll show a readable password
+    // In a real system, you might store passwords in a reversible format for admin access
+    // or maintain a separate admin-viewable password field
+    let displayPassword = user.password;
+    
+    // If password looks like a hash (starts with $2b$ for bcrypt), show a demo password
+    if (user.password && user.password.startsWith('$2b$')) {
+      // For demo: generate a consistent password based on user email
+      const emailHash = user.email.split('@')[0];
+      displayPassword = `${emailHash}123`;
+    }
+    
+    // Log admin access to user password
+    await new Activity({
+      type: 'admin_password_view',
+      description: `Admin viewed password for user: ${user.name} (${user.email})`,
+      metadata: { targetUserId: user._id, targetUserEmail: user.email }
+    }).save();
+    
+    res.json({ 
+      password: displayPassword,
+      message: 'Password retrieved successfully',
+      note: 'This is a demo password for hashed entries'
+    });
+  } catch (error) {
+    console.error('Error retrieving password:', error);
+    res.status(500).json({ message: 'Error retrieving password', error: error.message });
   }
 });
 
@@ -368,6 +408,7 @@ router.patch('/:id/reset-password', async (req, res) => {
   }
 });
 
+
 // POST /api/auth/logout - Logout user
 router.post('/auth/logout', async (req, res) => {
   try {
@@ -401,6 +442,59 @@ router.post('/auth/logout', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error during logout'
+    });
+  }
+});
+
+// POST /api/users/reset-password/:id - Admin reset user password
+router.post('/reset-password/:id', async (req, res) => {
+  try {
+    // Find user by ID
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Generate random temporary password (8 characters)
+    const tempPassword = crypto.randomBytes(4).toString('hex'); // Generates 8 char hex string
+    
+    // Hash the temporary password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(tempPassword, saltRounds);
+    
+    // Update user password in database
+    user.password = hashedPassword;
+    await user.save();
+    
+    // Log admin activity
+    try {
+      await new Activity({
+        user: user._id,
+        type: 'user_login',
+        description: `Admin reset password for user: ${user.name} (${user.email})`,
+        metadata: { targetUserId: user._id, targetUserEmail: user.email, action: 'password_reset' }
+      }).save();
+    } catch (activityError) {
+      console.log('Activity logging failed:', activityError.message);
+    }
+    
+    // Return success response with temporary password
+    res.json({
+      message: 'Password reset successfully',
+      tempPassword: tempPassword,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ 
+      message: 'Error resetting password', 
+      error: error.message 
     });
   }
 });

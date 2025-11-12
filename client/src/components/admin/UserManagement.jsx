@@ -11,7 +11,6 @@ import {
   Phone, 
   Calendar,
   MoreVertical,
-  Eye,
   Key
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +38,7 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
   const [users, setUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [userPasswords, setUserPasswords] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState(defaultRole);
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -79,6 +79,9 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
       if (response.ok) {
         setAllUsers(data.users || []);
         setTotalUsers(data.total || 0);
+        
+        // Fetch passwords for all users
+        await fetchUserPasswords(data.users || []);
       } else {
         fetchAllUsers();
       }
@@ -92,6 +95,34 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchUserPasswords = async (usersList) => {
+    const passwords = {};
+    
+    for (const user of usersList) {
+      try {
+        const response = await fetch(`/api/users/${user.id}/password`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          passwords[user.id] = data.password;
+        } else {
+          passwords[user.id] = 'Error loading';
+        }
+      } catch (error) {
+        console.error(`Error fetching password for user ${user.id}:`, error);
+        passwords[user.id] = 'Error loading';
+      }
+    }
+    
+    setUserPasswords(passwords);
   };
 
   const filterUsers = () => {
@@ -221,34 +252,68 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
   };
 
   const handleResetPassword = async (userId) => {
+    // Confirm action with user
+    if (!confirm('Are you sure you want to reset this user\'s password? A new temporary password will be generated.')) {
+      return;
+    }
+
     try {
-      const newPassword = Math.random().toString(36).slice(-8);
-      const response = await fetch(`/api/users/${userId}/reset-password`, {
-        method: 'PATCH',
+      // Call our new server endpoint that generates the password server-side
+      const response = await fetch(`/api/users/reset-password/${userId}`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ newPassword }),
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Password reset successfully. New password: ${newPassword}`,
-          variant: "default"
-        });
+        const data = await response.json();
+        const tempPassword = data.tempPassword;
+        
+        // Update the password display immediately
+        setUserPasswords(prev => ({
+          ...prev,
+          [userId]: tempPassword
+        }));
+        
+        // Copy password to clipboard
+        if (navigator.clipboard) {
+          try {
+            await navigator.clipboard.writeText(tempPassword);
+            toast({
+              title: "Password Reset Successful",
+              description: `New password: ${tempPassword} (copied to clipboard)`,
+              variant: "default"
+            });
+          } catch (clipboardError) {
+            toast({
+              title: "Password Reset Successful",
+              description: `New password: ${tempPassword}`,
+              variant: "default"
+            });
+          }
+        } else {
+          toast({
+            title: "Password Reset Successful",
+            description: `New password: ${tempPassword}`,
+            variant: "default"
+          });
+        }
       } else {
-        throw new Error('Failed to reset password');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
       }
     } catch (error) {
       console.error('Error resetting password:', error);
       toast({
         title: "Error",
-        description: "Failed to reset password",
+        description: error.message || "Failed to reset password",
         variant: "destructive"
       });
     }
   };
+
 
   // Use users directly since pagination is handled by API
   const currentUsers = users;
@@ -341,6 +406,7 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Password</TableHead>
                 <TableHead>Last Login</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -388,6 +454,30 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                        {userPasswords[user.id] || 'Loading...'}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (userPasswords[user.id] && navigator.clipboard) {
+                            navigator.clipboard.writeText(userPasswords[user.id]);
+                            toast({
+                              title: "Copied",
+                              description: "Password copied to clipboard",
+                              variant: "default"
+                            });
+                          }
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Key className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="h-3 w-3 mr-1" />
                       {formatDate(user.lastLogin)}
@@ -409,10 +499,6 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
                         <DropdownMenuItem onClick={() => setEditingUser(user)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit User
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('View details:', user)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleResetPassword(user.id)}>
                           <Key className="h-4 w-4 mr-2" />

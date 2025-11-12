@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
-  GraduationCap, 
-  BookOpen, 
   Activity, 
   Server,
   Plus,
   Download,
   Settings,
-  Bell,
   LogOut,
   User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/useToast';
-import { logoutUser } from '../../store/authSlice';
 import DashboardStats from './DashboardStats';
 import RecentActivity from './RecentActivity';
 import UserManagement from './UserManagement';
@@ -30,7 +25,6 @@ const AdminDashboard = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { toast } = useToast();
-  const dispatch = useDispatch();
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
@@ -197,7 +191,7 @@ const AdminDashboard = () => {
                 <div className="space-y-6">
                   <div className="bg-white rounded-lg shadow-sm border p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           onClick={() => setShowAddUserModal(true)}
@@ -206,16 +200,6 @@ const AdminDashboard = () => {
                         >
                           <Plus className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                           <span className="text-xs sm:text-sm">Add User</span>
-                        </Button>
-                      </motion.div>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          onClick={() => handleExportData('csv')}
-                          className="h-16 sm:h-20 flex-col w-full"
-                          variant="outline"
-                        >
-                          <Download className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
-                          <span className="text-xs sm:text-sm">Export</span>
                         </Button>
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -271,10 +255,7 @@ const AdminDashboard = () => {
       <AddUserModal
         isOpen={showAddUserModal}
         onClose={() => setShowAddUserModal(false)}
-        onUserAdded={() => {
-          setShowAddUserModal(false);
-          // Refresh data if needed
-        }}
+onUserAdded={() => setShowAddUserModal(false)}
       />
 
       {/* Logout Modal */}
