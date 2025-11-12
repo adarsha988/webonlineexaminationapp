@@ -393,14 +393,6 @@ const NotificationBell = () => {
                       </Button>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 px-2 py-1 h-7"
-                  >
-                    <Settings className="h-3 w-3 mr-1" />
-                    Settings
-                  </Button>
                 </div>
               </CardHeader>
               

@@ -8,7 +8,6 @@ import StudentExam from '../models/studentExam.model.js';
 import Notification from '../models/notification.model.js';
 import Activity from '../models/activity.model.js';
 import SharedBank from '../models/sharedBank.model.js';
-import { seedActivityData } from './activitySeedData.js';
 
 export async function seedComprehensiveData() {
   try {
@@ -951,14 +950,8 @@ export async function seedComprehensiveData() {
 
     console.log('🔔 Created notifications');
 
-    // 9. Create Activity Records using dedicated seed function
-    const activities = [];
-    try {
-      await seedActivityData();
-      console.log('📈 Activity records seeded');
-    } catch (err) {
-      console.log('⚠️ Activity seeding skipped:', err.message);
-    }
+    // 9. Activity records seeding removed (unused)
+    console.log('📈 Activity seeding skipped - not needed');
 
     // 10. Update statistics and relationships
     console.log('🔄 Updating relationships and statistics...');

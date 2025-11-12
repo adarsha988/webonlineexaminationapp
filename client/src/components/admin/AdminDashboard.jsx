@@ -86,24 +86,6 @@ const AdminDashboard = () => {
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Action Buttons */}
-              <Button
-                onClick={() => setShowAddUserModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 hidden sm:flex"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Add User</span>
-              </Button>
-              
-              {/* Mobile Add Button */}
-              <Button
-                onClick={() => setShowAddUserModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 sm:hidden"
-                size="sm"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
               
               {/* Export Buttons - Hidden on mobile */}
               <div className="hidden md:flex space-x-2">
@@ -279,25 +261,6 @@ const AdminDashboard = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
-                        <p className="text-sm text-gray-600">Require 2FA for admin accounts</p>
-                      </div>
-                      <Button variant="outline">Configure</Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Session Timeout</h4>
-                        <p className="text-sm text-gray-600">Automatically log out inactive users</p>
-                      </div>
-                      <Button variant="outline">Configure</Button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}

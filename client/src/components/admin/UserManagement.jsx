@@ -330,7 +330,6 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
-            <option value="suspended">Suspended</option>
           </select>
         </div>
 
@@ -406,7 +405,7 @@ const UserManagement = ({ searchQuery = '', defaultRole = 'all' }) => {
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
                         <DropdownMenuItem onClick={() => setEditingUser(user)}>
                           <Edit className="h-4 w-4 mr-2" />
                           Edit User

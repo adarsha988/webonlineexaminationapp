@@ -7,19 +7,11 @@ import { config } from "./config/env.js";
 // @ts-ignore
 import connectDB from "./config/database.js";
 // @ts-ignore
-import { autoSeed } from "./data/seedData.js";
-// @ts-ignore
-import { seedMongoData } from "./data/mongoSeedData.js";
-// @ts-ignore
-import studentSeedData from "./data/studentSeedData.js";
-// @ts-ignore
 import { seedComprehensiveData } from "./data/comprehensiveSeedData.js";
 // @ts-ignore
 import seedStudentDashboard from "./data/seedStudents.js";
 // @ts-ignore
 import { seedHomepageData } from "./data/homepageSeedData.js";
-// @ts-ignore
-import { seedActivityData } from "./data/activitySeedData.js";
 // @ts-ignore
 import { seedProctoringViolations } from "./data/proctoringViolationsSeed.js";
 
