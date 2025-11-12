@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 
 const HeroSection = ({ onOpenAuth }) => {
   const stats = [
-    { icon: BookOpen, label: 'Exams Created', value: '500+' },
-    { icon: Users, label: 'Active Students', value: '10K+' },
-    { icon: Award, label: 'Success Rate', value: '95%' }
+    { icon: BookOpen, label: 'Exams Created', value: '0' },
+    { icon: Users, label: 'Active Students', value: '0' },
+    { icon: Award, label: 'Success Rate', value: '0%' }
   ];
 
   return (
