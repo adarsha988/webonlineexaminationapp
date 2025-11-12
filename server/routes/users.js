@@ -12,30 +12,30 @@ router.get('/check-email', async (req, res) => {
   try {
     const { email } = req.query;
     
-    console.log('🔍 Checking email:', email);
+    console.log('Checking email:', email);
     
     if (!email) {
-      console.log('❌ No email provided');
+      console.log('No email provided');
       return res.status(400).json({ error: 'Email is required' });
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      console.log('❌ Invalid email format:', email);
+      console.log('Invalid email format:', email);
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    console.log('🔍 Searching for user with email:', email.toLowerCase());
+    console.log('Searching for user with email:', email.toLowerCase());
     const existingUser = await User.findOne({ email: email.toLowerCase() });
-    console.log('✅ Search result:', existingUser ? 'User found' : 'User not found');
+    console.log('Search result:', existingUser ? 'User found' : 'User not found');
     
     res.json({ 
       exists: !!existingUser,
       email: email 
     });
   } catch (error) {
-    console.error('❌ Error checking email:', error);
+    console.error('Error checking email:', error);
     console.error('Error details:', {
       message: error.message,
       stack: error.stack,
@@ -51,20 +51,20 @@ router.get('/check-email', async (req, res) => {
 // GET /api/users/emails - Get all existing emails for validation
 router.get('/emails', async (req, res) => {
   try {
-    console.log('📧 Fetching all existing emails for validation');
+    console.log('Fetching all existing emails for validation');
     
     // Only fetch emails, not full user data for performance
     const users = await User.find({}, { email: 1, _id: 0 });
     const emails = users.map(user => user.email.toLowerCase());
     
-    console.log('✅ Found', emails.length, 'existing emails');
+    console.log('Found', emails.length, 'existing emails');
     
     res.json({ 
       emails: emails,
       count: emails.length
     });
   } catch (error) {
-    console.error('❌ Error fetching emails:', error);
+    console.error('Error fetching emails:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined

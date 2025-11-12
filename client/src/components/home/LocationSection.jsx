@@ -43,7 +43,7 @@ const LocationSection = () => {
       coordinates: { lat: 27.6728, lng: 85.3242 },
       phone: '+977-1-5521693, +977-1-5521694',
       email: 'info@patanmultiplecampus.edu.np',
-      website: 'https://patanmultiplecampus.edu.np',
+      website: 'https://pmc.tu.edu.np/',
       postalCode: '44700',
       district: 'Lalitpur',
       province: 'Bagmati Province'

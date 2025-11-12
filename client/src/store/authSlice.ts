@@ -50,9 +50,9 @@ export const loginUser = createAsyncThunk<
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      console.log('🔐 LOGIN ATTEMPT:', { email, password: '***' });
+      console.log('LOGIN ATTEMPT:', { email, password: '***' });
       const response = await apiRequest('POST', '/api/auth/login', { email, password });
-      console.log('📡 LOGIN RESPONSE STATUS:', response.status);
+      console.log('LOGIN RESPONSE STATUS:', response.status);
       
       const data = await response.json();
       console.log('📦 LOGIN RESPONSE DATA:', data);
@@ -68,10 +68,10 @@ export const loginUser = createAsyncThunk<
       
       const { user, token } = data;
       localStorage.setItem('token', token);
-      console.log('✅ LOGIN SUCCESS - User:', user, 'Token stored:', !!token);
+      console.log('LOGIN SUCCESS - User:', user, 'Token stored:', !!token);
       return { user, token };
     } catch (error: any) {
-      console.error('❌ LOGIN ERROR:', error);
+      console.error('LOGIN ERROR:', error);
       
       // Try to parse error response
       if (error.response && error.response.data) {
@@ -156,15 +156,15 @@ export const logoutUser = createAsyncThunk<
       
       // Call server logout endpoint
       const response = await apiRequest('POST', '/api/auth/logout');
-      console.log('✅ SERVER LOGOUT SUCCESS - Response:', response.status);
+      console.log('SERVER LOGOUT SUCCESS - Response:', response.status);
       
       // Clear token from localStorage regardless of server response
       const tokenBefore = localStorage.getItem('token');
       localStorage.removeItem('token');
       const tokenAfter = localStorage.getItem('token');
       
-      console.log('🧹 TOKEN CLEANUP - Before:', !!tokenBefore, 'After:', !!tokenAfter);
-      console.log('🎉 LOGOUT COMPLETE - Success');
+      console.log('TOKEN CLEANUP - Before:', !!tokenBefore, 'After:', !!tokenAfter);
+      console.log('LOGOUT COMPLETE - Success');
       
       return { success: true };
     } catch (error: any) {
@@ -220,13 +220,13 @@ const authSlice = createSlice({
         state.errorType = null;
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
-        console.log('🎉 LOGIN FULFILLED - Redux state update:', action.payload);
+        console.log('LOGIN FULFILLED - Redux state update:', action.payload);
         state.isLoading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
-        console.log('📊 NEW AUTH STATE:', { 
+        console.log('NEW AUTH STATE:', { 
           isAuthenticated: state.isAuthenticated, 
           user: state.user,
           hasToken: !!state.token 
@@ -284,25 +284,25 @@ const authSlice = createSlice({
       })
       // Logout
       .addCase(logoutUser.pending, (state) => {
-        console.log('⏳ LOGOUT PENDING - Redux state: loading started, current loading:', state.isLoading);
+        console.log('LOGOUT PENDING - Redux state: loading started, current loading:', state.isLoading);
         state.isLoading = true;
-        console.log('📊 LOGOUT PENDING STATE - isLoading now:', state.isLoading);
+        console.log('LOGOUT PENDING STATE - isLoading now:', state.isLoading);
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        console.log('🎯 LOGOUT FULFILLED - Redux state: clearing user data');
-        console.log('📊 BEFORE CLEAR - user:', !!state.user, 'token:', !!state.token, 'isAuth:', state.isAuthenticated);
+        console.log('LOGOUT FULFILLED - Redux state: clearing user data');
+        console.log('BEFORE CLEAR - user:', !!state.user, 'token:', !!state.token, 'isAuth:', state.isAuthenticated);
         state.isLoading = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.error = null;
-        console.log('📊 AFTER CLEAR - user:', !!state.user, 'token:', !!state.token, 'isAuth:', state.isAuthenticated);
+        console.log('AFTER CLEAR - user:', !!state.user, 'token:', !!state.token, 'isAuth:', state.isAuthenticated);
       })
       .addCase(logoutUser.rejected, (state, action) => {
-        console.log('💥 LOGOUT REJECTED - Error:', action.payload);
+        console.log('LOGOUT REJECTED - Error:', action.payload);
         state.isLoading = false;
         state.error = action.payload || 'Logout failed';
-        console.log('📊 LOGOUT REJECTED STATE - isLoading:', state.isLoading, 'error:', state.error);
+        console.log('LOGOUT REJECTED STATE - isLoading:', state.isLoading, 'error:', state.error);
       });
   },
 });

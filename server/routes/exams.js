@@ -220,8 +220,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // POST /api/exams - Create new exam
 router.post('/', authenticateToken, authorizeRole(['admin', 'instructor']), async (req, res) => {
   try {
-    console.log('📝 CREATING EXAM:', { userId: req.user.userId, examData: req.body });
-    console.log('📝 STATUS RECEIVED:', req.body.status);
+    console.log('CREATING EXAM:', { userId: req.user.userId, examData: req.body });
+    console.log('STATUS RECEIVED:', req.body.status);
     
     const examData = {
       ...req.body,

@@ -224,14 +224,14 @@ router.get('/analytics/student/:studentId/comparative/:examId', async (req, res)
     .populate('exam examId', 'title subject totalMarks');
 
     if (!studentPerformance) {
-      console.log('❌ Student performance not found for comparative analysis:', { studentId, examId });
+      console.log('Student performance not found for comparative analysis:', { studentId, examId });
       return res.status(404).json({
         success: false,
         message: 'Student performance not found for this exam'
       });
     }
 
-    console.log('✅ Found student performance for comparative:', { studentId, examId, score: studentPerformance.score });
+    console.log('Found student performance for comparative:', { studentId, examId, score: studentPerformance.score });
 
     // Get class statistics - check both field variations
     const classStats = await StudentExam.aggregate([

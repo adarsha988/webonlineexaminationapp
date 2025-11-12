@@ -169,7 +169,7 @@ router.get('/student/:studentId/exams/ongoing', async (req, res) => {
       exam: { $in: examIds }
     });
 
-    console.log('🔍 ONGOING EXAMS DEBUG:');
+    console.log('ONGOING EXAMS DEBUG:');
     console.log('Total exams found:', ongoingExams.length);
     console.log('Student exam records:', allStudentExams.length);
     
@@ -239,7 +239,7 @@ router.get('/student/:studentId/exams/completed', async (req, res) => {
     })
     .sort({ submittedAt: -1 });
     
-    console.log('✅ COMPLETED EXAMS DEBUG:');
+    console.log('COMPLETED EXAMS DEBUG:');
     console.log('Total completed records found:', completedExams.length);
     completedExams.forEach(ce => {
       console.log(`Exam: ${ce.exam?.title || 'Unknown'}, Status: ${ce.status}, Submitted: ${ce.submittedAt}, Score: ${ce.score}`);
@@ -729,14 +729,14 @@ router.get('/student/:studentId/exam/:examId/result', async (req, res) => {
     .populate('student studentId', 'name email');
 
     if (!studentExam) {
-      console.log('❌ Completed exam not found for:', { studentId: user._id, examId, status: 'completed/submitted' });
+      console.log('Completed exam not found for:', { studentId: user._id, examId, status: 'completed/submitted' });
       return res.status(404).json({
         success: false,
         message: 'Completed exam not found'
       });
     }
 
-    console.log('✅ Found exam result:', { examId, studentId: user._id, score: studentExam.score });
+    console.log('Found exam result:', { examId, studentId: user._id, score: studentExam.score });
 
     // Include violations in the response
     const resultData = {

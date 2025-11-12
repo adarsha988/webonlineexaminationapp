@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, ExternalLink } from 'lucide-react';
 
 const Footer = () => {
   const quickLinks = [
@@ -40,6 +40,17 @@ const Footer = () => {
             <p className="text-gray-400 text-sm mb-4">
               Empowering education through innovative online examination solutions.
             </p>
+            <motion.a
+              href="https://pmc.tu.edu.np/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors duration-200 text-sm"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              Visit Patan Multiple Campus
+            </motion.a>
           </div>
 
           {/* Quick Links */}

@@ -194,7 +194,7 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
     const { examId } = req.params;
     const { studentId, answers } = req.body;
     
-    console.log('📝 SUBMIT EXAM DEBUG:');
+    console.log('SUBMIT EXAM DEBUG:');
     console.log('ExamId:', examId);
     console.log('StudentId:', studentId);
     console.log('Answers:', answers);
@@ -236,11 +236,11 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
     }
     
     if (!studentExam) {
-      console.log('❌ Exam session not found for studentId:', studentId, 'examId:', examId);
+      console.log('Exam session not found for studentId:', studentId, 'examId:', examId);
       return res.status(404).json({ success: false, message: 'Exam session not found' });
     }
     
-    console.log('✅ Found student exam:', studentExam._id, 'Current status:', studentExam.status);
+    console.log('Found student exam:', studentExam._id, 'Current status:', studentExam.status);
     
     // Enhanced answer processing with auto-grading
     let totalScore = 0;
@@ -257,7 +257,7 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
       answersArray = [answers];
     } else if (studentExam.answers && Array.isArray(studentExam.answers) && studentExam.answers.length > 0) {
       // Use answers already saved in the student exam record
-      console.log('📋 Using answers from studentExam record');
+      console.log('Using answers from studentExam record');
       answersArray = studentExam.answers;
     } else {
       answersArray = [];
@@ -341,7 +341,7 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
     studentExam.exam = studentExam.examId;
     studentExam.student = studentExam.studentId;
     
-    console.log('💾 SAVING SUBMISSION:', {
+    console.log('SAVING SUBMISSION:', {
       studentId: studentExam.studentId,
       examId: studentExam.examId,
       status: studentExam.status,
@@ -352,7 +352,7 @@ router.post('/:examId/submit', authenticateToken, async (req, res) => {
     
     await studentExam.save();
     
-    console.log('✅ SUBMISSION SAVED SUCCESSFULLY - Status:', studentExam.status);
+    console.log('SUBMISSION SAVED SUCCESSFULLY - Status:', studentExam.status);
     
     // Get violation count
     const violationCount = studentExam.violations?.length || 0;
@@ -399,8 +399,8 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
     const { examId } = req.params;
     const { studentId, violationType, description, timestamp, severity } = req.body;
     
-    console.log(`⚠️ VIOLATION REPORTED (ExamSessions): ${violationType} for student ${studentId} in exam ${examId}`);
-    console.log('📋 VIOLATION DETAILS:', { studentId, violationType, description, timestamp, severity });
+    console.log(`VIOLATION REPORTED (ExamSessions): ${violationType} for student ${studentId} in exam ${examId}`);
+    console.log('VIOLATION DETAILS:', { studentId, violationType, description, timestamp, severity });
     
     // Find the student exam session
     const studentExam = await StudentExam.findOne({ 
@@ -411,7 +411,7 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
     });
     
     if (!studentExam) {
-      console.log('❌ No active session found for violation report');
+      console.log('No active session found for violation report');
       return res.status(404).json({ success: false, message: 'No active session found' });
     }
     
@@ -430,7 +430,7 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
     studentExam.violations.push(violationData);
     await studentExam.save();
     
-    console.log(`✅ Violation saved to StudentExam: ${violationType}`);
+    console.log(`Violation saved to StudentExam: ${violationType}`);
     
     // Also create ProctoringLog entry for better tracking
     try {
@@ -455,10 +455,10 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
             studentExamId: studentExam._id
           }
         });
-        console.log(`✅ Violation logged to ProctoringLog`);
+        console.log(`Violation logged to ProctoringLog`);
       }
     } catch (logError) {
-      console.error('⚠️ Failed to create ProctoringLog entry:', logError.message);
+      console.error('Failed to create ProctoringLog entry:', logError.message);
       // Don't fail the request if logging fails
     }
     
@@ -469,7 +469,7 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error reporting violation:', error);
+    console.error('Error reporting violation:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error reporting violation', 

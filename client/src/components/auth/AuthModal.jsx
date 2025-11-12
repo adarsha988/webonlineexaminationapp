@@ -331,15 +331,6 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
               </p>
             </div>
 
-            {/* Demo Accounts */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Demo Accounts:</h4>
-              <div className="text-xs text-gray-600 space-y-1">
-                <div>Admin: alice@admin.com / password123</div>
-                <div>Instructor: inst@example.com / password123</div>
-                <div>Student: bob@student.edu / password123</div>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>

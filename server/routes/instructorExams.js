@@ -227,7 +227,7 @@ router.post('/', authenticateToken, requireInstructor, async (req, res) => {
       status = 'draft'
     } = req.body;
 
-    console.log('📝 EXAM CREATION - Status received:', status);
+    console.log('EXAM CREATION - Status received:', status);
 
     // Validation
     if (!title || !subject || !duration || !totalMarks || !passingMarks) {
@@ -271,8 +271,8 @@ router.post('/', authenticateToken, requireInstructor, async (req, res) => {
 
     await exam.save();
     
-    console.log('🚀 EXAM SAVED WITH STATUS:', exam.status);
-    console.log('🚀 FULL EXAM OBJECT:', JSON.stringify(exam, null, 2));
+    console.log('EXAM SAVED WITH STATUS:', exam.status);
+    console.log('FULL EXAM OBJECT:', JSON.stringify(exam, null, 2));
 
     // Populate and return
     const populatedExam = await Exam.findById(exam._id)

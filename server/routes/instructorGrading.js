@@ -157,16 +157,16 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
     const { submissionId } = req.params;
     const { gradedAnswers, feedback } = req.body;
     
-    console.log('📝 Grading submission:', submissionId);
-    console.log('📊 Graded answers received:', gradedAnswers);
+    console.log('Grading submission:', submissionId);
+    console.log('Graded answers received:', gradedAnswers);
     
     const submission = await StudentExam.findById(submissionId).populate('examId', 'totalMarks');
     if (!submission) {
       return res.status(404).json({ success: false, message: 'Submission not found' });
     }
     
-    console.log('📄 Submission found:', submission._id);
-    console.log('📋 Current answers:', submission.answers.length);
+    console.log('Submission found:', submission._id);
+    console.log('Current answers:', submission.answers.length);
     
     // Update manually graded answers
     let totalScore = submission.autoGradedScore || 0;
@@ -179,7 +179,7 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
       const gradedAnswer = gradedAnswers.find(ga => ga.questionId.toString() === answerQuestionId);
       
       if (gradedAnswer) {
-        console.log(`✅ Updating answer for question ${answerQuestionId}:`, {
+        console.log(`Updating answer for question ${answerQuestionId}:`, {
           oldScore: answer.score,
           newScore: gradedAnswer.score,
           status: answer.gradingStatus
@@ -193,8 +193,8 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
       }
     });
     
-    console.log(`📊 Updated ${updatedCount} answers`);
-    console.log(`💯 Scores - Auto: ${submission.autoGradedScore || 0}, Manual: ${manuallyGradedScore}`);
+    console.log(`Updated ${updatedCount} answers`);
+    console.log(`Scores - Auto: ${submission.autoGradedScore || 0}, Manual: ${manuallyGradedScore}`);
     
     // Update submission totals
     submission.manuallyGradedScore = manuallyGradedScore;
@@ -210,8 +210,8 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
     
     await submission.save();
     
-    console.log('✅ Grading saved successfully');
-    console.log(`📊 Final score: ${submission.score}/${totalMarks} (${submission.percentage}%)`);
+    console.log('Grading saved successfully');
+    console.log(`Final score: ${submission.score}/${totalMarks} (${submission.percentage}%)`);
     
     res.json({
       success: true,
@@ -226,7 +226,7 @@ router.post('/submission/:submissionId/grade', authenticateToken, async (req, re
     });
     
   } catch (error) {
-    console.error('❌ Error grading submission:', error);
+    console.error('Error grading submission:', error);
     res.status(500).json({ success: false, message: 'Error grading submission', error: error.message });
   }
 });
@@ -276,7 +276,7 @@ router.post('/submission/:submissionId/send-report', authenticateToken, async (r
     submission.reportSentAt = new Date();
     await submission.save();
     
-    console.log('✅ Report sent successfully');
+    console.log('Report sent successfully');
     console.log('Notification created:', notification._id);
     console.log('Student:', submission.studentId.name);
     console.log('Score:', `${submission.score}/${submission.totalMarks} (${submission.percentage}%)`);
@@ -295,7 +295,7 @@ router.post('/submission/:submissionId/send-report', authenticateToken, async (r
     });
     
   } catch (error) {
-    console.error('❌ Error sending report:', error);
+    console.error('Error sending report:', error);
     res.status(500).json({ success: false, message: 'Error sending report', error: error.message });
   }
 });

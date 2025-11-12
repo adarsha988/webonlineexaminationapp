@@ -113,7 +113,7 @@ class NotificationService {
         await Notification.create(notificationData);
       }
 
-      console.log('✅ Notification seeding completed successfully!');
+      console.log('Notification seeding completed successfully!');
     } catch (error) {
       console.error('Error seeding notifications:', error);
     }

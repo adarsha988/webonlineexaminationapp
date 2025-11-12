@@ -20,8 +20,8 @@ router.post('/log', authenticateToken, async (req, res) => {
     
     const userId = req.user.userId;
     
-    console.log(`🚨 PROCTORING LOG RECEIVED: ${eventType} for student ${studentId} in exam ${examId}`);
-    console.log('📋 LOG DETAILS:', { examId, studentId, sessionId, eventType, severity, description, timestamp, userId });
+    console.log('PROCTORING LOG RECEIVED: ' + eventType + ' for student ' + studentId + ' in exam ' + examId);
+    console.log('LOG DETAILS:', { examId, studentId, sessionId, eventType, severity, description, timestamp, userId });
 
     // Find or create attempt
     let attempt = await Attempt.findOne({ 
@@ -59,7 +59,7 @@ router.post('/log', authenticateToken, async (req, res) => {
           studentExam.violations.push(violationData);
           await studentExam.save();
           
-          console.log(`✅ Violation saved to StudentExam (no attempt): ${eventType}`);
+          console.log('Violation saved to StudentExam (no attempt): ' + eventType);
           
           return res.json({
             success: true,
@@ -73,7 +73,7 @@ router.post('/log', authenticateToken, async (req, res) => {
       }
       
       // If still no session found, log it anyway for tracking
-      console.log('⚠️ No active session found for proctoring log, but logging for records:', { examId, studentId, eventType });
+      console.log('No active session found for proctoring log, but logging for records:', { examId, studentId, eventType });
       return res.json({
         success: true,
         message: 'Event logged (no active session)',
@@ -659,7 +659,7 @@ router.get('/violations', authenticateToken, async (req, res) => {
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
       .slice(0, 1000); // Limit to 1000 most recent
 
-    console.log(`📊 Found ${allViolations.length} violations (${studentExamViolations.length} from exams, ${proctoringLogViolations.length} from logs)`);
+    console.log(`Found ${allViolations.length} violations (${studentExamViolations.length} from exams, ${proctoringLogViolations.length} from logs)`);
 
     res.json({
       success: true,
@@ -800,7 +800,7 @@ router.post('/test-violation', authenticateToken, async (req, res) => {
     const { examId, studentId } = req.body;
     const userId = req.user.userId;
     
-    console.log('🧪 TESTING VIOLATION TRACKING:', { examId, studentId, userId });
+    console.log('TESTING VIOLATION TRACKING:', { examId, studentId, userId });
     
     // Try to find StudentExam
     const StudentExam = (await import('../models/studentExam.model.js')).default;
@@ -827,7 +827,7 @@ router.post('/test-violation', authenticateToken, async (req, res) => {
       studentExam.violations.push(testViolation);
       await studentExam.save();
       
-      console.log('✅ TEST VIOLATION SAVED TO STUDENTEXAM');
+      console.log('TEST VIOLATION SAVED TO STUDENTEXAM');
       
       res.json({
         success: true,
@@ -836,14 +836,14 @@ router.post('/test-violation', authenticateToken, async (req, res) => {
         studentExamId: studentExam._id
       });
     } else {
-      console.log('❌ NO STUDENTEXAM FOUND FOR TEST');
+      console.log('NO STUDENTEXAM FOUND FOR TEST');
       res.status(404).json({
         success: false,
         message: 'No student exam session found'
       });
     }
   } catch (error) {
-    console.error('❌ TEST VIOLATION ERROR:', error);
+    console.error('TEST VIOLATION ERROR:', error);
     res.status(500).json({
       success: false,
       message: 'Test violation failed',

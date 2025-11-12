@@ -56,8 +56,8 @@ const InstructorDashboard = () => {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('✅ Completed Exams API Response:', data);
-          console.log('📊 First exam group:', data.data?.[0]);
+          console.log('Completed Exams API Response:', data);
+          console.log('First exam group:', data.data?.[0]);
           setCompletedExams(data.data || []);
         }
       } catch (err) {
@@ -156,7 +156,7 @@ const InstructorDashboard = () => {
             <div className="flex-1">
               <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent group-hover:from-indigo-700 group-hover:to-blue-700 transition-all">{exam.title}</h3>
               <p className="text-sm text-gray-600 font-medium mt-2">
-                📚 {exam.subject} • {exam.questionsCount || 0} Questions • {exam.totalMarks || 0} Marks
+                {exam.subject} • {exam.questionsCount || 0} Questions • {exam.totalMarks || 0} Marks
               </p>
               {exam.scheduledDate && (
                 <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
@@ -225,12 +225,6 @@ const InstructorDashboard = () => {
     <InstructorLayout>
       {/* Gradient Background */}
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 relative overflow-hidden">
-        {/* Animated Mesh Gradient Blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-blue-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 -left-40 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-full blur-3xl"></div>
-        </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -240,16 +234,11 @@ const InstructorDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="relative mb-8"
           >
-            {/* Background Texture Card */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-pink-50/50 rounded-3xl blur-3xl"></div>
             <motion.div
               className="relative bg-gradient-to-br from-white/80 via-indigo-50/40 to-purple-50/60 backdrop-blur-sm rounded-2xl border-2 border-indigo-100/50 shadow-2xl overflow-hidden p-6 sm:p-8"
               whileHover={{ scale: 1.01 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              {/* Decorative Elements */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-200/20 to-purple-200/20 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-cyan-200/20 rounded-full blur-3xl"></div>
               
               <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="relative flex-1">
@@ -265,14 +254,6 @@ const InstructorDashboard = () => {
                       Manage your examinations and track student progress.
                     </p>
                   </motion.div>
-                  <motion.div
-                    className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-3xl opacity-20"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.2, 0.3, 0.2]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  />
                 </div>
                 
                 {/* Enhanced Action Buttons */}
@@ -449,14 +430,14 @@ const InstructorDashboard = () => {
                     <Button 
                       className="w-full"
                       onClick={() => {
-                        console.log('🔍 Clicked View Students');
-                        console.log('📝 Exam Group:', examGroup);
-                        console.log('🆔 Exam ID:', examGroup.exam?._id);
+                        console.log('Clicked View Students');
+                        console.log('Exam Group:', examGroup);
+                        console.log('Exam ID:', examGroup.exam?._id);
                         const examId = examGroup.exam?._id;
                         if (examId) {
                           navigate(`/instructor/completed-exams/${examId}`);
                         } else {
-                          console.error('❌ Exam ID is undefined!');
+                          console.error('Exam ID is undefined!');
                         }
                       }}
                     >

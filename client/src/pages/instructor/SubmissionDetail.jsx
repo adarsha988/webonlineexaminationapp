@@ -408,8 +408,10 @@ const SubmissionDetail = () => {
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Invalid Submission</h2>
           <p className="text-gray-600 mb-4">The submission ID is missing or invalid.</p>
-          <Link href="/instructor">
-            <Button>
+          <Link href="/instructor/dashboard">
+            <Button 
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Instructor Dashboard
             </Button>
@@ -470,7 +472,10 @@ const SubmissionDetail = () => {
         <div className="flex justify-between items-center">
           <div>
             <Link href={`/instructor/completed-exams/${examId}/submissions`}>
-              <Button variant="ghost" className="mb-2">
+              <Button 
+                variant="outline" 
+                className="mb-2 border-2 border-indigo-300 hover:border-indigo-500 bg-white/80 backdrop-blur-sm hover:bg-indigo-50 transition-all duration-300 shadow-md hover:shadow-lg"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Submissions
               </Button>

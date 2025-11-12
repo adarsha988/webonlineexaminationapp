@@ -187,15 +187,6 @@ const Login = () => {
     }
   };
 
-  const demoAccounts = [
-    { type: 'Student', email: 'bob@student.edu', password: 'password123' },
-    { type: 'Instructor', email: 'inst@example.com', password: 'password123' },
-    { type: 'Admin', email: 'alice@admin.com', password: 'password123' },
-  ];
-
-  const fillDemoAccount = (email, password) => {
-    setFormData(prev => ({ ...prev, email, password }));
-  };
 
   const handleRetry = () => {
     dispatch(clearError());
@@ -297,50 +288,19 @@ const Login = () => {
             >
               {isValidating ? 'Validating credentials...' : isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
-            
-            {/* Debug Test Button */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-2"
-              onClick={() => {
-                console.log('🧪 TEST: Setting shouldRedirect = true');
-                setShouldRedirect(true);
-              }}
-            >
-              Test Redirect (Debug)
-            </Button>
-          </form>
-          
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-card text-muted-foreground">Demo Accounts</span>
-              </div>
-            </div>
-            
-            <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-              {demoAccounts.map((account) => (
-                <div
-                  key={account.type}
-                  className="text-center p-2 bg-muted rounded cursor-pointer hover:bg-muted/80 transition-colors"
-                  onClick={() => fillDemoAccount(account.email, account.password)}
-                  data-testid={`demo-${account.type.toLowerCase()}`}
-                >
-                  <div className="font-medium">{account.type}</div>
-                  <div className="text-muted-foreground">{account.email}</div>
-                  <div className="text-muted-foreground">{account.password}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+        </form>
+        
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <a href="/register" className="text-primary hover:text-primary/80 font-medium">
+              Sign up
+            </a>
+          </p>
         </div>
       </div>
     </div>
+  </div>
   );
-};
 
 export default Login;

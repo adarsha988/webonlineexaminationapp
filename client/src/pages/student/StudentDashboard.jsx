@@ -60,7 +60,7 @@ const StudentDashboard = () => {
   }, [location.state, toast]);
 
   useEffect(() => {
-    console.log('📍 StudentDashboard mounted/updated:', { 
+    console.log('StudentDashboard mounted/updated:', { 
       userId: user?._id, 
       loading,
       locationKey: location.key 
@@ -83,10 +83,10 @@ const StudentDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      console.log('🔄 Fetching dashboard data for student:', user?._id);
+      console.log('Fetching dashboard data for student:', user?._id);
       setLoading(true);
       const studentId = user._id || user.id;
-      console.log('📊 Student ID:', studentId);
+      console.log('Student ID:', studentId);
 
       // Fetch all dashboard data in parallel
       const [
@@ -115,7 +115,7 @@ const StudentDashboard = () => {
 
       // API responses received successfully
 
-      console.log('📋 Dashboard data received:', {
+      console.log('Dashboard data received:', {
         upcoming: upcomingRes.data?.length || 0,
         ongoing: ongoingRes.data?.length || 0,
         completed: completedRes.data?.length || 0,
@@ -137,7 +137,7 @@ const StudentDashboard = () => {
           lastUpdated: new Date().toISOString()
         };
         localStorage.setItem('studentAnalytics', JSON.stringify(analyticsData));
-        console.log('📊 Analytics data stored:', analyticsData);
+        console.log('Analytics data stored:', analyticsData);
       }
 
     } catch (error) {
@@ -148,7 +148,7 @@ const StudentDashboard = () => {
         variant: "destructive",
       });
     } finally {
-      console.log('✅ Dashboard loading complete');
+      console.log('Dashboard loading complete');
       setLoading(false);
     }
   };
@@ -263,10 +263,10 @@ const StudentDashboard = () => {
     return <Badge variant="default" className="bg-blue-500">Available</Badge>;
   };
 
-  console.log('🎨 StudentDashboard render:', { loading, user: !!user, upcomingExams: upcomingExams.length });
+  console.log('StudentDashboard render:', { loading, user: !!user, upcomingExams: upcomingExams.length });
 
   if (!user) {
-    console.log('❌ No user found, showing error');
+    console.log('No user found, showing error');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <Card className="max-w-md">
@@ -287,7 +287,7 @@ const StudentDashboard = () => {
     : 0;
 
   if (loading) {
-    console.log('📊 Showing loading state');
+    console.log('Showing loading state');
     return (
       <StudentLayout>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
