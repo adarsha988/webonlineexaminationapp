@@ -6,7 +6,7 @@ import Testimonial from '../models/testimonial.model.js';
 
 export const seedMongoData = async () => {
   try {
-    console.log('🌱 Starting MongoDB seeding...');
+    console.log('Starting MongoDB seeding...');
 
     // Seed Quiz Questions
     const existingQuizzes = await Quiz.countDocuments();
@@ -65,65 +65,53 @@ export const seedMongoData = async () => {
     if (existingTestimonials === 0) {
       const sampleTestimonials = [
         {
-          name: 'Dr. Sarah Johnson',
-          designation: 'Professor of Computer Science',
-          company: 'Stanford University',
-          message: 'ExamSystem has revolutionized how we conduct assessments. The AI-powered grading saves us hours of work while maintaining accuracy.',
-          profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/sarahjohnson',
-          universityUrl: 'https://stanford.edu'
+          name: 'Adarash khatiwoda',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
+          message: 'E-XAM has revolutionized how we conduct assessments. The AI-powered grading saves us hours of work while maintaining accuracy.',
+          profileImage: 'https://ui-avatars.com/api/?name=Adarash+khatiwoda&background=3b82f6&color=fff&size=150'
         },
         {
-          name: 'Michael Chen',
-          designation: 'Training Director',
-          company: 'TechCorp Solutions',
+          name: 'Jivraj Ghimire',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
           message: 'The analytics and reporting features give us incredible insights into our team\'s learning progress. Highly recommended!',
-          profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/michaelchen',
-          universityUrl: 'https://techcorp.com'
+          profileImage: 'https://ui-avatars.com/api/?name=Jivraj+Ghimire&background=10b981&color=fff&size=150'
         },
         {
-          name: 'Emily Rodriguez',
-          designation: 'High School Principal',
-          company: 'Lincoln Academy',
+          name: 'Khem Saud',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
           message: 'Our students love the intuitive interface, and teachers appreciate the comprehensive question bank and easy exam creation.',
-          profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/emilyrodriguez',
-          universityUrl: 'https://lincolnacademy.edu'
+          profileImage: 'https://ui-avatars.com/api/?name=Khem+Saud&background=f59e0b&color=fff&size=150'
         },
         {
-          name: 'David Park',
-          designation: 'Online Course Creator',
-          company: 'EduTech Pro',
+          name: 'Chandra Saud',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
           message: 'The mobile-friendly design and real-time monitoring have made remote assessments seamless for our global student base.',
-          profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/davidpark',
-          universityUrl: 'https://edutechpro.com'
+          profileImage: 'https://ui-avatars.com/api/?name=Chandra+Saud&background=8b5cf6&color=fff&size=150'
         },
         {
-          name: 'Lisa Thompson',
-          designation: 'Department Head',
-          company: 'Medical Training Institute',
+          name: 'Ashish Bhushal',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
           message: 'Security features are top-notch. We can conduct high-stakes certification exams with complete confidence in the platform.',
-          profileImage: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/lisathompson',
-          universityUrl: 'https://medicaltraining.edu'
+          profileImage: 'https://ui-avatars.com/api/?name=Ashish+Bhushal&background=ef4444&color=fff&size=150'
         },
         {
-          name: 'James Wilson',
-          designation: 'IT Administrator',
-          company: 'Global University',
+          name: 'Yuwal Rai',
+          designation: 'Student Of Computer Science',
+          company: 'Tribhuwn University',
           message: 'Implementation was smooth, and the 24/7 support team has been incredibly responsive. Great platform overall.',
-          profileImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&h=150&fit=crop&crop=face',
-          linkedinUrl: 'https://linkedin.com/in/jameswilson',
-          universityUrl: 'https://globaluniversity.edu'
+          profileImage: 'https://ui-avatars.com/api/?name=Yuwal+Rai&background=06b6d4&color=fff&size=150'
         }
       ];
 
       await Testimonial.insertMany(sampleTestimonials);
-      console.log('✅ Testimonials seeded successfully');
+      console.log('Testimonials seeded successfully');
     } else {
-      console.log('⏭️  Testimonials already exist');
+      console.log(' Testimonials already exist');
     }
 
     // Seed Colleges

@@ -18,9 +18,9 @@ interface GuestHomepageProps {
 }
 
 const GuestHomepage = ({ initialAuthMode = 'signup' }: GuestHomepageProps) => {
-  console.log('🏠 GUEST HOMEPAGE: Component rendering with initialAuthMode:', initialAuthMode);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!!initialAuthMode);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialAuthMode || 'login');
+  const [isInitialCheckComplete, setIsInitialCheckComplete] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const hasRedirected = useRef(false);
@@ -28,12 +28,27 @@ const GuestHomepage = ({ initialAuthMode = 'signup' }: GuestHomepageProps) => {
   const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Check auth ONLY on mount if we have a token but no user data
-    const token = localStorage.getItem('token');
-    if (token && !user && !isLoading && !hasRedirected.current) {
-      console.log('🔍 HOMEPAGE: Token exists but no user data - checking authentication');
-      dispatch(checkAuth());
-    }
+    // Initial authentication check
+    const performInitialAuthCheck = async () => {
+      console.log('🔍 GUEST HOMEPAGE: Starting initial auth check with initialAuthMode:', initialAuthMode);
+      
+      const token = localStorage.getItem('token');
+      
+      if (token && !user && !isLoading && !hasRedirected.current) {
+        console.log('🔍 HOMEPAGE: Token exists but no user data - checking authentication');
+        await dispatch(checkAuth());
+      } else if (!token) {
+        console.log('🔍 HOMEPAGE: No token found - user is not authenticated');
+      } else if (user) {
+        console.log('🔍 HOMEPAGE: User already authenticated:', user.role);
+      }
+      
+      // Mark initial check as complete
+      setIsInitialCheckComplete(true);
+      console.log('✅ GUEST HOMEPAGE: Initial auth check complete, rendering component');
+    };
+
+    performInitialAuthCheck();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -71,13 +86,21 @@ const GuestHomepage = ({ initialAuthMode = 'signup' }: GuestHomepageProps) => {
     }
   };
 
-  if (isLoading) {
+  // Show loading while performing initial auth check or during auth operations
+  if (!isInitialCheckComplete || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          <p className="text-blue-600 font-medium">
+            {!isInitialCheckComplete ? 'Checking authentication...' : 'Loading...'}
+          </p>
+        </div>
       </div>
     );
   }
+
+  console.log('🏠 GUEST HOMEPAGE: Rendering component after auth check complete');
 
   return (
     <div className="min-h-screen bg-white">

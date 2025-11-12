@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, CheckCircle, ExternalLink } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,44 +14,10 @@ const ContactSection = () => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [colleges, setColleges] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchColleges();
-  }, []);
 
-  const fetchColleges = async () => {
-    try {
-      const response = await fetch('/api/college');
-      if (response.ok) {
-        const data = await response.json();
-        setColleges(data);
-      }
-    } catch (error) {
-      console.error('Error fetching colleges:', error);
-      // Fallback to default college data
-      const defaultCollege = {
-        _id: 'default',
-        name: 'Patan Multiple Campus',
-        address: 'Lalitpur, Nepal',
-        phone: '9816944639',
-        email: 'Adarshakd57@gmail.com',
-        website: 'https://patanmultiplecampus.edu.np'
-      };
-      setColleges([defaultCollege]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const scrollToMap = () => {
-    const mapElement = document.getElementById('interactive-map');
-    if (mapElement) {
-      mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -104,44 +70,6 @@ const ContactSection = () => {
     }
   };
 
-  const getContactInfo = () => {
-    const primaryCollege = colleges.length > 0 ? colleges[0] : null;
-    
-    return [
-      {
-        icon: Mail,
-        title: 'Email Us',
-        content: primaryCollege?.email || 'Adarshakd57@gmail.com',
-        description: 'Send us an email anytime',
-        isClickable: true,
-        onClick: () => {
-          const email = primaryCollege?.email || 'Adarshakd57@gmail.com';
-          window.open(`mailto:${email}?subject=Inquiry about Online Examination System`, '_self');
-          scrollToMap();
-        }
-      },
-      {
-        icon: Phone,
-        title: 'Call Us',
-        content: primaryCollege?.phone || '9816944639',
-        description: '24/7 support available',
-        isClickable: true,
-        onClick: () => {
-          const phone = primaryCollege?.phone || '9816944639';
-          window.open(`tel:${phone}`, '_self');
-          scrollToMap();
-        }
-      },
-      {
-        icon: MapPin,
-        title: 'Visit Us',
-        content: primaryCollege?.name || 'Patan Multiple Campus',
-        description: 'Click to view on map',
-        isClickable: true,
-        onClick: scrollToMap
-      }
-    ];
-  };
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
@@ -163,7 +91,7 @@ const ContactSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="max-w-2xl mx-auto">
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -256,128 +184,6 @@ const ContactSection = () => {
             </form>
           </motion.div>
 
-          {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
-              <p className="text-gray-600 mb-8">
-                We're always happy to help! Reach out to us through any of these channels 
-                and we'll get back to you as soon as possible.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {getContactInfo().map((info, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`flex items-start space-x-4 p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ${
-                    info.isClickable ? 'cursor-pointer hover:bg-blue-50' : ''
-                  }`}
-                  onClick={info.onClick}
-                >
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <info.icon className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="flex-grow">
-                    <h4 className="font-semibold text-gray-900 mb-1">{info.title}</h4>
-                    <p className={`font-medium mb-1 ${
-                      info.isClickable ? 'text-blue-600 hover:text-blue-800' : 'text-blue-600'
-                    }`}>
-                      {info.content}
-                    </p>
-                    <p className="text-sm text-gray-600">{info.description}</p>
-                  </div>
-                  {info.isClickable && (
-                    <div className="flex-shrink-0">
-                      <ExternalLink className="h-4 w-4 text-gray-400" />
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Multiple Colleges Section */}
-            {colleges.length > 1 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-xl p-6 shadow-sm"
-              >
-                <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <MapPin className="h-5 w-5 text-blue-600 mr-2" />
-                  All Campus Locations
-                </h4>
-                <div className="space-y-3">
-                  {colleges.map((college, index) => (
-                    <motion.button
-                      key={college._id}
-                      onClick={() => {
-                        // Trigger college selection in LocationSection
-                        const event = new CustomEvent('selectCollege', { 
-                          detail: { college } 
-                        });
-                        window.dispatchEvent(event);
-                        scrollToMap();
-                      }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 flex items-center justify-between group shadow-sm hover:shadow-md"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
-                          <MapPin className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
-                            {college.name}
-                          </p>
-                          <p className="text-sm text-gray-600">{college.address}</p>
-                          {college.phone && (
-                            <p className="text-xs text-gray-500">📞 {college.phone}</p>
-                          )}
-                        </div>
-                      </div>
-                      <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors duration-200" />
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* FAQ Section */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6">
-              <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                Quick Answers
-              </h4>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <span className="font-medium text-gray-900">Response Time:</span>
-                  <span className="text-gray-600 ml-2">Usually within 2-4 hours</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Support Hours:</span>
-                  <span className="text-gray-600 ml-2">24/7 for urgent issues</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Free Trial:</span>
-                  <span className="text-gray-600 ml-2">30 days, no credit card required</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>

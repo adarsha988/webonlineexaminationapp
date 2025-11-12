@@ -21,6 +21,8 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
     role: 'student'
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     if (error && error !== null) {
@@ -66,21 +68,98 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
     console.log('🖱️ FORM SUBMIT:', { mode, email: formData.email, passwordLength: formData.password?.length });
     
     if (mode === 'login') {
-      const result = await dispatch(loginUser({
-        email: formData.email,
-        password: formData.password
-      }));
+      const { email, password } = formData;
       
-      console.log('📋 LOGIN RESULT:', result);
+      // Basic validation
+      if (!email.trim() || !password.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter both email and password",
+          variant: "destructive",
+        });
+        return;
+      }
       
-      // Close modal on successful login - use setTimeout to prevent rerender race condition
-      if (loginUser.fulfilled.match(result)) {
-        console.log('✅ Login successful, closing modal');
-        setTimeout(() => {
-          onClose();
-        }, 100); // Small delay to let state update propagate
-      } else {
-        console.log('❌ Login failed:', result);
+      setIsValidating(true);
+      setShouldRedirect(false);
+      
+      try {
+        console.log('🔍 MODAL: Validating credentials...');
+        
+        const result = await dispatch(loginUser({
+          email: email,
+          password: password
+        }));
+        
+        console.log('📋 MODAL LOGIN RESULT:', result);
+        
+        // Handle the result
+        if (loginUser.fulfilled.match(result)) {
+          console.log('✅ MODAL: Credentials valid - Login successful');
+          toast({
+            title: "Login Successful",
+            description: `Welcome back!`,
+          });
+          
+          // Close modal and allow redirect
+          setTimeout(() => {
+            onClose();
+            setShouldRedirect(true);
+          }, 100);
+          
+        } else if (loginUser.rejected.match(result)) {
+          // Login failed - show specific error and keep modal open
+          console.log('❌ MODAL: Credentials invalid - Keeping modal open');
+          
+          const errorPayload = result.payload;
+          const errorMessage = typeof errorPayload === 'string' ? errorPayload : errorPayload?.message || 'Login failed';
+          
+          // Show specific error messages based on common scenarios
+          if (errorMessage.includes('No account found') || errorMessage.includes('User not found')) {
+            toast({
+              title: "Account Not Found",
+              description: "No account found with this email address...",
+              variant: "destructive",
+            });
+          } else if (errorMessage.includes('Incorrect password') || errorMessage.includes('Invalid password')) {
+            toast({
+              title: "Incorrect Password",
+              description: "Incorrect password. Please check your password and try again.",
+              variant: "destructive",
+            });
+          } else if (errorMessage.includes('inactive')) {
+            toast({
+              title: "Account Inactive",
+              description: "Your account is currently inactive. Please contact the administrator...",
+              variant: "destructive",
+            });
+          } else if (errorMessage.includes('suspended')) {
+            toast({
+              title: "Account Suspended",
+              description: "Your account has been suspended. Please contact the administrator for assistance.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Login Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+          }
+          
+          // Keep modal open for retry
+          setShouldRedirect(false);
+        }
+      } catch (error) {
+        console.error('Modal login error:', error);
+        toast({
+          title: "Network Error",
+          description: "Please check your connection and try again.",
+          variant: "destructive",
+        });
+        setShouldRedirect(false);
+      } finally {
+        setIsValidating(false);
       }
     } else {
       const result = await dispatch(registerUser({
@@ -222,10 +301,15 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
 
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isValidating}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 mt-6"
               >
-                {isLoading ? (
+                {isValidating ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Validating credentials...
+                  </div>
+                ) : isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     {mode === 'login' ? 'Signing In...' : 'Creating Account...'}

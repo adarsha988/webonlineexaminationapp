@@ -78,7 +78,7 @@ const StudentLayout = ({ children }) => {
               </motion.div>
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Online Examination System
+                  E-XAM
                 </h1>
                 <p className="text-xs text-gray-500 font-medium">Student Portal</p>
               </div>

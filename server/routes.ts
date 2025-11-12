@@ -80,6 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth Routes
+  // @ts-ignore
   const authRoutes = await import('./routes/auth.js');
   app.use('/api/auth', authRoutes.default);
 
@@ -109,6 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Exam session routes (for students) - using dedicated exam sessions routes
   console.log('🔗 MOUNTING EXAM SESSIONS ROUTES AT /api/exam-sessions');
+  // @ts-ignore
   const examSessionsRoutes = await import('./routes/examSessions.js');
   app.use('/api/exam-sessions', examSessionsRoutes.default);
   
@@ -125,6 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/instructor', instructorStatsRoutes);
   
   // Instructor Grading Routes
+  // @ts-ignore
   const instructorGradingRoutes = await import('./routes/instructorGrading.js');
   app.use('/api/instructor/grading', instructorGradingRoutes.default);
   

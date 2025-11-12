@@ -1,4 +1,4 @@
-// AI Grading Service for Online Examination System
+// AI Grading Service for E-XAM
 // Supports both mock grading for demo and real OpenAI integration
 
 interface GradingItem {

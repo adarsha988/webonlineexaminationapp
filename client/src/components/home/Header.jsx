@@ -36,7 +36,7 @@ const Header = ({ onOpenAuth }) => {
             whileHover={{ scale: 1.05 }}
           >
             <GraduationCap className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">ExamSystem</span>
+            <span className="text-xl font-bold text-gray-900">E-XAM</span>
           </motion.div>
 
           {/* Desktop Navigation */}

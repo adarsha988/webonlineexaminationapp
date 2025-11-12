@@ -81,11 +81,10 @@ const FeaturesSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Powerful Features for Modern Education
+            Features
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Everything you need to create, manage, and analyze online examinations 
-            with professional-grade tools and insights.
+            Key features of our examination platform.
           </p>
         </motion.div>
 
@@ -116,30 +115,6 @@ const FeaturesSection = () => {
           ))}
         </div>
 
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
-            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Join thousands of educators who trust our platform for their assessment needs. 
-              Start your free trial today and experience the difference.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200">
-                Start Free Trial
-              </button>
-              <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-200">
-                View Demo
-              </button>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

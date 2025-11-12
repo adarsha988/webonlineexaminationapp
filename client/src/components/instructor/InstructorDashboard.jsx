@@ -286,11 +286,11 @@ const InstructorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyber-midnight via-cyber-dark to-cyber-blue flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyber-neon-cyan shadow-cyan"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Monitor className="w-8 h-8 text-cyber-purple animate-pulse" />
+            <BookOpen className="w-8 h-8 text-indigo-500 animate-pulse" />
           </div>
         </div>
       </div>
@@ -300,85 +300,37 @@ const InstructorDashboard = () => {
   const instructorName = localStorage.getItem('userName') || 'Instructor';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyber-midnight via-cyber-dark to-cyber-blue relative overflow-hidden">
-      {/* Cyberpunk Neural Network Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Cyber Grid Pattern */}
-        <div className="absolute inset-0 bg-cyber-grid bg-cyber-grid opacity-15"></div>
-        
-        {/* Neural Connection Lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-15">
-          <defs>
-            <linearGradient id="instructorNeuralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          {[...Array(10)].map((_, i) => (
-            <motion.line
-              key={i}
-              x1={`${Math.random() * 100}%`}
-              y1={`${Math.random() * 100}%`}
-              x2={`${Math.random() * 100}%`}
-              y2={`${Math.random() * 100}%`}
-              stroke="url(#instructorNeuralGradient)"
-              strokeWidth="1.5"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.4 }}
-              transition={{ duration: 2.5, delay: i * 0.15, repeat: Infinity, repeatType: "reverse" }}
-            />
-          ))}
-        </svg>
-
-        {/* Glowing Orbs */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-cyber-electric-purple opacity-10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-cyber-cyan opacity-10 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyber-purple opacity-5 rounded-full blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-        
-        {/* Floating AI Icons */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-8 h-8 text-cyber-cyan opacity-20"
-            style={{
-              left: `${10 + (i * 12)}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              y: [-15, 15, -15],
-              rotate: [0, 360],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 6 + Math.random() * 4,
-              repeat: Infinity,
-              delay: i * 0.3,
-            }}
-          >
-            {i % 3 === 0 ? <Brain className="w-full h-full" /> :
-             i % 3 === 1 ? <Sparkles className="w-full h-full" /> :
-             <Zap className="w-full h-full" />}
-          </motion.div>
-        ))}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Futuristic Header */}
+        {/* Clean Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyber-neon-cyan via-cyber-purple to-cyber-electric-purple mb-2 tracking-wide">
-                Instructor Command Center
-              </h1>
-              <p className="text-gray-300 flex items-center gap-2">
-                <Brain className="w-5 h-5 text-cyber-cyan animate-glow" />
-                Welcome back, {instructorName} — Monitor, Create, and Analyze
-              </p>
+            <div className="relative">
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome back, {instructorName}!
+                </h1>
+                <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                  Manage your exams and monitor student progress.
+                </p>
+              </motion.div>
+              <motion.div
+                className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-3xl opacity-20"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.3, 0.2]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
             </div>
             
             {/* Create Exam Button */}
@@ -386,7 +338,7 @@ const InstructorDashboard = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowCreateForm(true)}
-              className="px-6 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-purple text-white font-bold rounded-2xl shadow-neon hover:shadow-glow transition-all flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Create New Exam

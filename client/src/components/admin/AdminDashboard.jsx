@@ -268,7 +268,7 @@ const AdminDashboard = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         System Name
                       </label>
-                      <Input defaultValue="Online Examination System" />
+                      <Input defaultValue="E-XAM" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -362,7 +362,7 @@ const studentSeedData = async () => {
 
       notifications.push({
         type: 'system',
-        title: 'Welcome to Online Examination System',
+        title: 'Welcome to E-XAM',
         message: 'Welcome to our online examination platform. You can view your exams, take tests, and track your progress from your dashboard.',
         link: '/student/dashboard',
         userId: student._id,

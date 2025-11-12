@@ -89,7 +89,7 @@ const Register = () => {
         <div className="text-center">
           <GraduationCap className="mx-auto h-16 w-16 text-primary mb-4" />
           <h2 className="text-3xl font-bold text-foreground">Create Account</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Join the examination system</p>
+          <p className="mt-2 text-sm text-muted-foreground">Join E-XAM</p>
         </div>
         
         <div className="bg-card rounded-lg shadow-lg p-8 border border-border">

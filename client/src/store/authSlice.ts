@@ -20,6 +20,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  errorType: string | null;
   isAuthenticated: boolean;
 }
 
@@ -44,7 +45,7 @@ interface AuthResponse {
 export const loginUser = createAsyncThunk<
   AuthResponse,
   LoginCredentials,
-  { rejectValue: string }
+  { rejectValue: { message: string; errorType?: string; accountStatus?: string } }
 >(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
@@ -56,13 +57,35 @@ export const loginUser = createAsyncThunk<
       const data = await response.json();
       console.log('📦 LOGIN RESPONSE DATA:', data);
       
+      // Check if login was successful
+      if (!data.success) {
+        return rejectWithValue({
+          message: data.message || 'Login failed',
+          errorType: data.errorType,
+          accountStatus: data.accountStatus
+        });
+      }
+      
       const { user, token } = data;
       localStorage.setItem('token', token);
       console.log('✅ LOGIN SUCCESS - User:', user, 'Token stored:', !!token);
       return { user, token };
     } catch (error: any) {
       console.error('❌ LOGIN ERROR:', error);
-      return rejectWithValue(error.message || 'Login failed');
+      
+      // Try to parse error response
+      if (error.response && error.response.data) {
+        return rejectWithValue({
+          message: error.response.data.message || 'Login failed',
+          errorType: error.response.data.errorType,
+          accountStatus: error.response.data.accountStatus
+        });
+      }
+      
+      return rejectWithValue({
+        message: error.message || 'Network error. Please check your connection and try again.',
+        errorType: 'NETWORK_ERROR'
+      });
     }
   }
 );
@@ -166,6 +189,7 @@ const initialState: AuthState = {
   token: localStorage.getItem('token'),
   isLoading: false,
   error: null,
+  errorType: null,
   isAuthenticated: !!localStorage.getItem('token'), // Set to true if token exists
 };
 
@@ -179,9 +203,11 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      state.errorType = null;
     },
     clearError: (state) => {
       state.error = null;
+      state.errorType = null;
     },
   },
   extraReducers: (builder) => {
@@ -191,6 +217,7 @@ const authSlice = createSlice({
         console.log('⏳ LOGIN PENDING - Setting loading state');
         state.isLoading = true;
         state.error = null;
+        state.errorType = null;
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
         console.log('🎉 LOGIN FULFILLED - Redux state update:', action.payload);
@@ -208,7 +235,15 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         console.log('💥 LOGIN REJECTED:', action.payload);
         state.isLoading = false;
-        state.error = action.payload || 'Login failed';
+        
+        if (typeof action.payload === 'object' && action.payload !== null) {
+          state.error = action.payload.message || 'Login failed';
+          state.errorType = action.payload.errorType || null;
+        } else {
+          state.error = action.payload || 'Login failed';
+          state.errorType = null;
+        }
+        
         state.isAuthenticated = false;
       })
       // Register

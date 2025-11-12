@@ -35,32 +35,22 @@ const LocationSection = () => {
   }, []);
 
   const fetchColleges = async () => {
-    try {
-      const response = await fetch('/api/college');
-      if (response.ok) {
-        const data = await response.json();
-        setColleges(data);
-        if (data.length > 0) {
-          setSelectedCollege(data[0]); // Set first college as default
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching colleges:', error);
-      // Fallback to default college data
-      const defaultCollege = {
-        _id: 'default',
-        name: 'Patan Multiple Campus',
-        address: 'Lalitpur, Nepal',
-        coordinates: { lat: 27.69287908279441, lng: 85.31398931506282 },
-        phone: '9816944639',
-        email: 'Adarshakd57@gmail.com',
-        website: 'https://patanmultiplecampus.edu.np'
-      };
-      setColleges([defaultCollege]);
-      setSelectedCollege(defaultCollege);
-    } finally {
-      setLoading(false);
-    }
+    // Always use only Patan Multiple Campus data
+    const patanCampus = {
+      _id: 'patan-campus',
+      name: 'Patan Multiple Campus',
+      address: 'Patan Dhoka, Lalitpur-3, Bagmati Province, Nepal',
+      coordinates: { lat: 27.6728, lng: 85.3242 },
+      phone: '+977-1-5521693, +977-1-5521694',
+      email: 'info@patanmultiplecampus.edu.np',
+      website: 'https://patanmultiplecampus.edu.np',
+      postalCode: '44700',
+      district: 'Lalitpur',
+      province: 'Bagmati Province'
+    };
+    setColleges([patanCampus]);
+    setSelectedCollege(patanCampus);
+    setLoading(false);
   };
 
   const handleCollegeClick = (college) => {
@@ -102,41 +92,6 @@ const LocationSection = () => {
           </p>
         </motion.div>
 
-        {/* College Selection */}
-        {colleges.length > 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="mb-8"
-          >
-            <div className="bg-white rounded-2xl shadow-lg p-6 max-w-4xl mx-auto">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Our Campus Locations</h3>
-              <div className="flex flex-wrap justify-center gap-3">
-                {colleges.map((college) => (
-                  <motion.button
-                    key={college._id}
-                    onClick={() => handleCollegeClick(college)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-full transition-all duration-300 flex items-center space-x-2 ${
-                      selectedCollege?._id === college._id
-                        ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                        : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700 hover:shadow-md'
-                    }`}
-                  >
-                    <MapPin className="h-4 w-4" />
-                    <span className="font-medium">{college.name}</span>
-                    {college.website && (
-                      <ExternalLink className="h-3 w-3 opacity-70" />
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Map Section */}
@@ -233,20 +188,10 @@ const LocationSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Address</h4>
-                    {selectedCollege ? (
-                      <button
-                        onClick={() => handleCollegeClick(selectedCollege)}
-                        className="text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline text-left"
-                      >
-                        <p>{selectedCollege.name}</p>
-                        <p>{selectedCollege.address}</p>
-                      </button>
-                    ) : (
-                      <>
-                        <p className="text-gray-600">Patan Multiple Campus</p>
-                        <p className="text-gray-600">Lalitpur, Nepal</p>
-                      </>
-                    )}
+                    <p className="text-gray-600 font-medium">Patan Multiple Campus</p>
+                    <p className="text-gray-600">Patan Dhoka, Lalitpur-3</p>
+                    <p className="text-gray-600">Bagmati Province, Nepal</p>
+                    <p className="text-gray-600">Postal Code: 44700</p>
                   </div>
                 </div>
 
@@ -256,9 +201,8 @@ const LocationSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Phone</h4>
-                    <p className="text-gray-600">
-                      {selectedCollege?.phone || '9816944639'}
-                    </p>
+                    <p className="text-gray-600">+977-1-5521693</p>
+                    <p className="text-gray-600">+977-1-5521694</p>
                     <p className="text-sm text-gray-500">Available 24/7</p>
                   </div>
                 </div>
@@ -269,9 +213,7 @@ const LocationSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Email</h4>
-                    <p className="text-gray-600">
-                      {selectedCollege?.email || 'Adarshakd57@gmail.com'}
-                    </p>
+                    <p className="text-gray-600">info@patanmultiplecampus.edu.np</p>
                     <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
                   </div>
                 </div>
@@ -295,15 +237,15 @@ const LocationSection = () => {
               <h3 className="text-xl font-bold mb-4">Why Choose Us?</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">10+</div>
+                  <div className="text-2xl font-bold">0</div>
                   <div className="text-sm text-blue-100">Years Experience</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">5000+</div>
+                  <div className="text-2xl font-bold">0</div>
                   <div className="text-sm text-blue-100">Students</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">100+</div>
+                  <div className="text-2xl font-bold">0</div>
                   <div className="text-sm text-blue-100">Courses</div>
                 </div>
                 <div className="text-center">

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { GraduationCap, Facebook, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 const Footer = () => {
   const quickLinks = [
@@ -9,27 +9,12 @@ const Footer = () => {
     { label: 'Contact', href: '#contact' }
   ];
 
-  const resources = [
-    { label: 'Documentation', href: '#' },
-    { label: 'API Reference', href: '#' },
-    { label: 'Help Center', href: '#' },
-    { label: 'System Status', href: '#' }
+  const campusInfo = [
+    { label: 'Patan Dhoka, Lalitpur-3', href: '#contact' },
+    { label: 'Bagmati Province, Nepal', href: '#contact' }
   ];
 
-  const legal = [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
-    { label: 'Cookie Policy', href: '#' },
-    { label: 'GDPR Compliance', href: '#' }
-  ];
 
-  const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Mail, href: 'mailto:support@examsystem.com', label: 'Email' }
-  ];
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId.replace('#', ''));
@@ -40,46 +25,32 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Brand Section */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <motion.div 
-              className="flex items-center space-x-2 mb-4"
+              className="flex items-center space-x-2 mb-3"
               whileHover={{ scale: 1.05 }}
             >
-              <GraduationCap className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">ExamSystem</span>
+              <GraduationCap className="h-6 w-6 text-blue-400" />
+              <span className="text-lg font-bold">E-XAM</span>
             </motion.div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Empowering education through innovative online examination solutions. 
-              Trusted by institutions worldwide for secure, scalable, and smart assessments.
+            <p className="text-gray-400 text-sm mb-4">
+              Empowering education through innovative online examination solutions.
             </p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.href}
-                  aria-label={social.label}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors duration-200"
-                >
-                  <social.icon className="h-5 w-5" />
-                </motion.a>
-              ))}
-            </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-sm font-semibold mb-3 text-white">Quick Links</h3>
             <ul className="space-y-2">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <button
                     onClick={() => scrollToSection(link.href)}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
                   >
                     {link.label}
                   </button>
@@ -88,52 +59,36 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Campus Location */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
+            <h3 className="text-sm font-semibold mb-3 text-white">Campus Location</h3>
             <ul className="space-y-2">
-              {resources.map((link, index) => (
+              {campusInfo.map((info, index) => (
                 <li key={index}>
                   <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                    href={info.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
                   >
-                    {link.label}
+                    {info.label}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
-              {legal.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} ExamSystem. All rights reserved.
+        <div className="border-t border-gray-800 mt-6 pt-4">
+          <div className="flex flex-col md:flex-row justify-between items-center text-xs">
+            <p className="text-gray-400">
+              © {new Date().getFullYear()} E-XAM. All rights reserved.
             </p>
-            <div className="flex items-center space-x-6 mt-4 md:mt-0">
-              <span className="text-gray-400 text-sm">Made with ❤️ for educators</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-gray-400 text-sm">All systems operational</span>
+            <div className="flex items-center space-x-4 mt-2 md:mt-0">
+              <span className="text-gray-400">Made with ❤️ for educators</span>
+              <div className="flex items-center space-x-1">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-gray-400">All systems operational</span>
               </div>
             </div>
           </div>

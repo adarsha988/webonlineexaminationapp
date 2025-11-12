@@ -177,10 +177,64 @@ const StudentDashboard = () => {
     navigate(`/student/exam/${examId}`);
   };
 
-  const handleViewResult = (examId) => {
-    navigate(`/student/exam/${examId}/result`);
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await studentNotificationsAPI.markAsRead(user._id, notificationId);
+      // Update local state to reflect the change
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification._id === notificationId 
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      // Update unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      toast({
+        title: "Notification marked as read",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark notification as read",
+        variant: "destructive",
+      });
+    }
   };
 
+  const handleViewNotification = (notification) => {
+    // Mark as read when viewing
+    if (!notification.isRead) {
+      handleMarkAsRead(notification._id);
+    }
+
+    // Check if notification is about exam results
+    if (notification.type === 'exam_result' || notification.message.toLowerCase().includes('result')) {
+      // Extract exam ID from notification metadata or message
+      const examId = notification.metadata?.examId || notification.examId;
+      if (examId) {
+        navigate(`/student/exam/${examId}/result`);
+      } else {
+        // Fallback to general results page
+        navigate('/student/exams/completed');
+      }
+    } else if (notification.type === 'exam_reminder') {
+      // Navigate to exam if it's a reminder
+      const examId = notification.metadata?.examId || notification.examId;
+      if (examId) {
+        navigate(`/student/exam/${examId}`);
+      }
+    } else {
+      // For other notifications, just mark as read (already done above)
+      toast({
+        title: "Notification viewed",
+        description: notification.title,
+      });
+    }
+  };
 
   const formatTimeRemaining = (seconds) => {
     if (!seconds) return '';
@@ -596,87 +650,6 @@ const StudentDashboard = () => {
               )}
             </motion.div>
 
-            {/* Recent Completed Exams with Results */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="space-y-4"
-            >
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <motion.div
-                  initial={{ x: -20 }}
-                  animate={{ x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex items-center gap-3"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="relative"
-                  >
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                    <motion.div
-                      className="absolute inset-0 bg-green-500 rounded-full blur-md"
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-gray-900">Recent Results</h2>
-                  <Badge className="bg-green-500 text-white">{completedExams.length}</Badge>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate('/student/exams/completed')}
-                    className="border-2 border-green-500 text-green-600 hover:bg-green-50 font-semibold"
-                  >
-                    View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </div>
-              {completedExams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {completedExams.map((exam, index) => (
-                    <motion.div
-                      key={exam._id}
-                      initial={{ opacity: 0, scale: 0.8, rotateY: 90 }}
-                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                      transition={{ delay: 0.1 * index, type: "spring", stiffness: 100 }}
-                      whileHover={{ scale: 1.03, y: -5 }}
-                    >
-                      <ExamCard
-                        exam={exam}
-                        onViewResult={handleViewResult}
-                        type="completed"
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                >
-                  <Card className="border-none shadow-lg">
-                    <CardContent className="text-center py-12">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                      >
-                        <CheckCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                      </motion.div>
-                      <p className="text-gray-500 font-medium">No completed exams yet</p>
-                      <p className="text-gray-400 text-sm mt-2">Complete exams to see your results here</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </motion.div>
           </TabsContent>
 
 
@@ -787,16 +760,27 @@ const StudentDashboard = () => {
                                   </span>
                                 </div>
                               </div>
-                              {!notification.isRead && (
+                              <div className="flex flex-col gap-2 shrink-0">
                                 <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleMarkAsRead(notification._id)}
-                                  className="shrink-0 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-full font-medium transition-colors"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleViewNotification(notification)}
+                                  className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-full font-medium transition-colors flex items-center gap-1"
                                 >
-                                  Mark Read
+                                  <Eye className="h-3 w-3" />
+                                  View
                                 </motion.button>
-                              )}
+                                {!notification.isRead && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleMarkAsRead(notification._id)}
+                                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-full font-medium transition-colors"
+                                  >
+                                    Mark Read
+                                  </motion.button>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

@@ -278,7 +278,7 @@ router.post('/auto-generate', async (req, res) => {
         notifications.push({
           senderId: data.createdBy,
           recipientId: data.userId,
-          message: `Welcome to the Online Examination System! Your account has been created successfully.`,
+          message: `Welcome to E-XAM! Your account has been created successfully.`,
           type: 'system',
           link: `/${data.role}/dashboard`,
           metadata: {

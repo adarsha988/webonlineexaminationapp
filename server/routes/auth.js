@@ -23,7 +23,8 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'No account found with this email address. Please check your email or register for a new account.',
+        errorType: 'USER_NOT_FOUND'
       });
     }
 
@@ -32,9 +33,41 @@ router.post('/login', async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Incorrect password. Please check your password and try again.',
+        errorType: 'INVALID_PASSWORD'
       });
     }
+
+    // Check if user account is active
+    if (user.status !== 'active') {
+      let message = '';
+      let errorType = '';
+      
+      switch (user.status) {
+        case 'inactive':
+          message = 'Your account is currently inactive. Please contact the administrator to activate your account.';
+          errorType = 'ACCOUNT_INACTIVE';
+          break;
+        case 'suspended':
+          message = 'Your account has been suspended. Please contact the administrator for assistance.';
+          errorType = 'ACCOUNT_SUSPENDED';
+          break;
+        default:
+          message = 'Your account status does not allow login. Please contact the administrator.';
+          errorType = 'ACCOUNT_STATUS_INVALID';
+      }
+      
+      return res.status(403).json({
+        success: false,
+        message,
+        errorType,
+        accountStatus: user.status
+      });
+    }
+
+    // Update last login time
+    user.lastLogin = new Date();
+    await user.save();
 
     // Generate JWT token
     const token = jwt.sign(

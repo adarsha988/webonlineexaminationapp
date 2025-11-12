@@ -11,6 +11,7 @@
     "check": "tsc",
     "db:push": "drizzle-kit push --config config/drizzle.config.ts",
     "db:seed": "node server/scripts/createTestSubmissions.js",
+    "db:seed-users": "node server/scripts/seedDatabase.js",
     "test": "cross-env NODE_ENV=test jest",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage"

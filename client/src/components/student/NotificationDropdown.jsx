@@ -117,16 +117,55 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
       handleMarkAsRead(notification._id);
     }
     setIsOpen(false);
-    if (notification.link) {
+    
+    // Check if notification is about exam results
+    if (notification.type === 'exam_result' || notification.type === 'result' || 
+        notification.message.toLowerCase().includes('result') || 
+        notification.title.toLowerCase().includes('result')) {
+      // Extract exam ID from notification metadata or message
+      const examId = notification.metadata?.examId || notification.examId;
+      if (examId) {
+        navigate(`/student/exam/${examId}/result`);
+      } else {
+        // Fallback to general results page
+        navigate('/student/exams/completed');
+      }
+    } else if (notification.type === 'exam_reminder' || notification.type === 'exam') {
+      // Navigate to exam if it's a reminder
+      const examId = notification.metadata?.examId || notification.examId;
+      if (examId) {
+        navigate(`/student/exam/${examId}`);
+      } else {
+        navigate('/student/dashboard');
+      }
+    } else if (notification.link) {
+      // Use provided link
       navigate(notification.link);
+    } else {
+      // Default fallback - go to notifications tab on dashboard
+      navigate('/student/dashboard');
+      // Use a timeout to switch to notifications tab
+      setTimeout(() => {
+        const notificationsTab = document.querySelector('[value="notifications"]');
+        if (notificationsTab) {
+          notificationsTab.click();
+        }
+      }, 100);
     }
+    
+    toast({
+      title: "Viewing notification",
+      description: notification.title,
+    });
   };
 
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'exam':
+      case 'exam_reminder':
         return <Calendar className="h-5 w-5 text-blue-500" />;
       case 'result':
+      case 'exam_result':
         return <Award className="h-5 w-5 text-green-500" />;
       case 'system':
         return <AlertCircle className="h-5 w-5 text-purple-500" />;
@@ -241,17 +280,25 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAsRead }) => {
                                 {formatTimeAgo(notification.createdAt)}
                               </span>
                               <div className="flex items-center gap-2">
-                                {notification.link && (
-                                  <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={(e) => handleViewNotification(notification, e)}
-                                    className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-medium rounded-lg shadow-md transition-all"
-                                  >
-                                    <Eye className="h-3 w-3" />
-                                    View
-                                  </motion.button>
-                                )}
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={(e) => handleViewNotification(notification, e)}
+                                  className={`flex items-center gap-1 px-3 py-1 text-white text-xs font-medium rounded-lg shadow-md transition-all ${
+                                    notification.type === 'exam_result' || notification.type === 'result' || 
+                                    notification.message.toLowerCase().includes('result') || 
+                                    notification.title.toLowerCase().includes('result')
+                                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                                      : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'
+                                  }`}
+                                >
+                                  <Eye className="h-3 w-3" />
+                                  {notification.type === 'exam_result' || notification.type === 'result' || 
+                                   notification.message.toLowerCase().includes('result') || 
+                                   notification.title.toLowerCase().includes('result')
+                                    ? 'View Result'
+                                    : 'View'}
+                                </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}

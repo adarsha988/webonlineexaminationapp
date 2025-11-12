@@ -194,7 +194,7 @@ async function populateAllCollections() {
         {
           userId: userId,
           title: 'Welcome',
-          message: 'Welcome to the Online Examination System!',
+          message: 'Welcome to E-XAM!',
           type: 'system',
           read: true,
           createdAt: new Date(),
