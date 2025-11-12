@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Eye, EyeOff, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -206,7 +205,6 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-2">
-              <GraduationCap className="h-6 w-6 text-blue-600" />
               <h2 className="text-xl font-bold text-gray-900">
                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
               </h2>
@@ -215,7 +213,7 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              ×
             </button>
           </div>
 
@@ -275,9 +273,9 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange }) => {
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      "👁"
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      "👁"
                     )}
                   </button>
                 </div>

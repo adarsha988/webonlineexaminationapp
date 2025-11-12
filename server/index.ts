@@ -1,19 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
-// @ts-ignore
-import NotificationService from "./services/notificationService.js";
 import { setupVite, serveStatic, log } from "./vite.js";
 import { config } from "./config/env.js";
 // @ts-ignore
 import connectDB from "./config/database.js";
-// @ts-ignore
-import { seedComprehensiveData } from "./data/comprehensiveSeedData.js";
-// @ts-ignore
-import seedStudentDashboard from "./data/seedStudents.js";
-// @ts-ignore
-import { seedHomepageData } from "./data/homepageSeedData.js";
-// @ts-ignore
-import { seedProctoringViolations } from "./data/proctoringViolationsSeed.js";
 
 const app = express();
 
@@ -101,24 +91,11 @@ app.use((req, res, next) => {
     // Connect to MongoDB
     try {
       await connectDB();
-      log('✅ Database connected successfully');
+      log('Database connected successfully');
       
-      // Seed data with error handling
-      try {
-        await seedStudentDashboard();
-        await seedComprehensiveData();
-        await seedHomepageData();
-        await seedProctoringViolations();
-        await NotificationService.seedNotifications();
-        log('✅ Data seeding completed');
-      } catch (seedError) {
-        const errorMessage = seedError instanceof Error ? seedError.message : String(seedError);
-        console.error('⚠️  Seeding error (non-fatal):', errorMessage);
-        log('⚠️  Server running without seed data');
-      }
     } catch (dbError) {
-      console.error('❌ Database connection error:', dbError);
-      log('⚠️  Server running without database');
+      console.error('Database connection error:', dbError);
+      log('Server running without database');
     }
   });
 })();

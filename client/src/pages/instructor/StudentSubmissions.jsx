@@ -239,10 +239,10 @@ const StudentSubmissions = () => {
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Invalid Exam</h2>
           <p className="text-gray-600 mb-4">The exam ID is missing or invalid.</p>
-          <Link to="/instructor/completed-exams">
+          <Link to="/instructor">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Completed Exams
+              Back to Instructor Dashboard
             </Button>
           </Link>
         </div>
@@ -256,10 +256,10 @@ const StudentSubmissions = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <Link to="/instructor/completed-exams">
+            <Link to="/instructor">
               <Button variant="ghost" className="mb-2">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Completed Exams
+                Back to Instructor Dashboard
               </Button>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">

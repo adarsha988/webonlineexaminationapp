@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/admin/exams', examsRoutes);
   
   // Exam session routes (for students) - using dedicated exam sessions routes
-  console.log('🔗 MOUNTING EXAM SESSIONS ROUTES AT /api/exam-sessions');
+  console.log('MOUNTING EXAM SESSIONS ROUTES AT /api/exam-sessions');
   // @ts-ignore
   const examSessionsRoutes = await import('./routes/examSessions.js');
   app.use('/api/exam-sessions', examSessionsRoutes.default);
@@ -186,21 +186,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
-      console.log('🔐 LOGIN ATTEMPT:', { email, passwordLength: password?.length });
+      console.log('LOGIN ATTEMPT:', { email, passwordLength: password?.length });
       
       const user = await User.findOne({ email });
-      console.log('👤 USER FOUND:', user ? `Yes - ${user.email}` : 'No');
+      console.log('USER FOUND:', user ? `Yes - ${user.email}` : 'No');
       if (!user) {
-        console.log('❌ User not found for email:', email);
+        console.log('User not found for email:', email);
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
       // Compare password with bcrypt
-      console.log('🔑 Comparing passwords...');
+      console.log('Comparing passwords...');
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('🔑 PASSWORD VALID:', isPasswordValid);
+      console.log('PASSWORD VALID:', isPasswordValid);
       if (!isPasswordValid) {
-        console.log('❌ Password comparison failed for user:', email);
+        console.log('Password comparison failed for user:', email);
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 

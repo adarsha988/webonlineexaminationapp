@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Activity, 
-  Server,
-  Plus,
-  Download,
-  Settings,
-  LogOut,
-  User
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/useToast';
@@ -27,9 +17,9 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'users', label: 'User Management', icon: Users },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: 'overview', label: 'Overview' },
+    { id: 'users', label: 'User Management' },
+    { id: 'settings', label: 'Settings' }
   ];
 
   const handleExportData = async (format = 'json') => {
@@ -74,7 +64,6 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Admin Dashboard</h1>
               <div className="hidden lg:flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1">
-                <Server className="h-4 w-4 text-green-600" />
                 <span className="text-sm text-gray-600">System Online</span>
               </div>
             </div>
@@ -88,7 +77,6 @@ const AdminDashboard = () => {
                   onClick={() => handleExportData('csv')}
                   size="sm"
                 >
-                  <Download className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
                 <Button
@@ -106,7 +94,6 @@ const AdminDashboard = () => {
               {/* User Profile & Logout */}
               <div className="relative flex items-center space-x-2">
                 <div className="hidden sm:flex items-center space-x-2 bg-gray-50 rounded-full px-3 py-1">
-                  <User className="h-4 w-4 text-gray-600" />
                   <span className="text-sm text-gray-700">Admin</span>
                 </div>
                 <Button
@@ -115,7 +102,6 @@ const AdminDashboard = () => {
                   onClick={() => setIsLogoutModalOpen(true)}
                   className="flex items-center space-x-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
                 >
-                  <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Logout</span>
                 </Button>
               </div>
@@ -130,7 +116,6 @@ const AdminDashboard = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-8">
             {tabs.map((tab) => {
-              const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
@@ -141,7 +126,6 @@ const AdminDashboard = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -152,7 +136,6 @@ const AdminDashboard = () => {
           <div className="md:hidden">
             <div className="flex space-x-1 py-2">
               {tabs.map((tab) => {
-                const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
@@ -163,7 +146,6 @@ const AdminDashboard = () => {
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className="h-4 w-4 mb-1" />
                     <span className="truncate">{tab.label.split(' ')[0]}</span>
                   </button>
                 );
@@ -198,7 +180,6 @@ const AdminDashboard = () => {
                           className="h-16 sm:h-20 flex-col w-full"
                           variant="outline"
                         >
-                          <Plus className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                           <span className="text-xs sm:text-sm">Add User</span>
                         </Button>
                       </motion.div>
@@ -208,7 +189,6 @@ const AdminDashboard = () => {
                           className="h-16 sm:h-20 flex-col w-full"
                           variant="outline"
                         >
-                          <Users className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                           <span className="text-xs sm:text-sm">Users</span>
                         </Button>
                       </motion.div>

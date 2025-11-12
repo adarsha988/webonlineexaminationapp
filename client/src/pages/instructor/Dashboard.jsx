@@ -366,11 +366,6 @@ const InstructorDashboard = () => {
                 </h2>
                 <p className="text-gray-600 text-lg mt-2 ml-14">Review student submissions and send reports</p>
               </div>
-              <Link to="/instructor/completed-exams">
-                <Button variant="outline" className="border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  View All Completed
-                </Button>
-              </Link>
             </div>
 
           {loadingCompleted ? (

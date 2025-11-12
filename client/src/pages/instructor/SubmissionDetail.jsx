@@ -408,10 +408,10 @@ const SubmissionDetail = () => {
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Invalid Submission</h2>
           <p className="text-gray-600 mb-4">The submission ID is missing or invalid.</p>
-          <Link href="/instructor/completed-exams">
+          <Link href="/instructor">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Completed Exams
+              Back to Instructor Dashboard
             </Button>
           </Link>
         </div>

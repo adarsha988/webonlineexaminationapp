@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Header = ({ onOpenAuth }) => {
@@ -35,7 +34,6 @@ const Header = ({ onOpenAuth }) => {
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.05 }}
           >
-            <GraduationCap className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold text-gray-900">E-XAM</span>
           </motion.div>
 
@@ -75,9 +73,9 @@ const Header = ({ onOpenAuth }) => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-700" />
+              "×"
             ) : (
-              <Menu className="h-6 w-6 text-gray-700" />
+              "☰"
             )}
           </button>
         </div>

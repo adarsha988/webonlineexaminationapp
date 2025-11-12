@@ -146,11 +146,11 @@ const CompletedExamDetails = () => {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/instructor/completed-exams')}
+            onClick={() => navigate('/instructor')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Completed Exams
+            Back to Instructor Dashboard
           </Button>
           
           <div className="flex justify-between items-start">
