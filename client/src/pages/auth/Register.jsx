@@ -28,14 +28,14 @@ const Register = () => {
     if (isAuthenticated && user) {
       // Redirect based on user role
       if (user.role === 'admin') {
-        setLocation('/admin/dashboard');
+        navigate('/admin/dashboard');
       } else if (user.role === 'instructor') {
-        setLocation('/instructor/dashboard');
+        navigate('/instructor/dashboard');
       } else {
-        setLocation('/student/dashboard');
+        navigate('/student/dashboard');
       }
     }
-  }, [isAuthenticated, user, setLocation]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (error && error !== null) {

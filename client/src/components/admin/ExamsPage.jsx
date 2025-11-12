@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/table';
 
 const ExamsPage = () => {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -211,7 +211,7 @@ const ExamsPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation('/admin/dashboard')}
+              onClick={() => navigate('/admin/dashboard')}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="h-4 w-4" />

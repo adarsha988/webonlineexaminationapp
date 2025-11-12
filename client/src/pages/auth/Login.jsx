@@ -34,18 +34,18 @@ const Login = () => {
       // Redirect based on user role
       if (user.role === 'admin') {
         console.log('👑 Redirecting to admin dashboard');
-        setLocation('/admin/dashboard');
+        navigate('/admin/dashboard');
       } else if (user.role === 'instructor') {
         console.log('👨‍🏫 Redirecting to instructor dashboard');
-        setLocation('/instructor/dashboard');
+        navigate('/instructor/dashboard');
       } else {
         console.log('👨‍🎓 Redirecting to student dashboard');
-        setLocation('/student/dashboard');
+        navigate('/student/dashboard');
       }
     } else {
       console.log('❌ No redirect - isAuthenticated:', isAuthenticated, 'user:', !!user);
     }
-  }, [isAuthenticated, user, setLocation]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     if (error && error !== null) {

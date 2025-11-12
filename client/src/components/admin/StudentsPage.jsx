@@ -21,7 +21,7 @@ const StudentsPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation('/admin/dashboard')}
+              onClick={() => navigate('/admin/dashboard')}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="h-4 w-4" />

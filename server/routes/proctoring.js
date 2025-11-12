@@ -19,6 +19,9 @@ router.post('/log', authenticateToken, async (req, res) => {
     } = req.body;
     
     const userId = req.user.userId;
+    
+    console.log(`🚨 PROCTORING LOG RECEIVED: ${eventType} for student ${studentId} in exam ${examId}`);
+    console.log('📋 LOG DETAILS:', { examId, studentId, sessionId, eventType, severity, description, timestamp, userId });
 
     // Find or create attempt
     let attempt = await Attempt.findOne({ 
@@ -28,12 +31,53 @@ router.post('/log', authenticateToken, async (req, res) => {
     }).sort({ startTime: -1 });
 
     if (!attempt) {
-      // If no active attempt, just log it without linking
-      console.log('No active attempt found for proctoring log:', { examId, studentId, eventType });
+      // If no active attempt, try to find StudentExam and create violation there
+      console.log('No active attempt found, trying StudentExam:', { examId, studentId, eventType });
+      
+      try {
+        const StudentExam = (await import('../models/studentExam.model.js')).default;
+        const studentExam = await StudentExam.findOne({ 
+          $or: [
+            { studentId: studentId || userId, examId: examId },
+            { student: studentId || userId, exam: examId }
+          ]
+        });
+        
+        if (studentExam) {
+          // Add violation to StudentExam
+          if (!studentExam.violations) {
+            studentExam.violations = [];
+          }
+          
+          const violationData = {
+            type: eventType,
+            description: description || 'Proctoring violation detected',
+            timestamp: timestamp ? new Date(timestamp) : new Date(),
+            severity: severity || 'medium'
+          };
+          
+          studentExam.violations.push(violationData);
+          await studentExam.save();
+          
+          console.log(`✅ Violation saved to StudentExam (no attempt): ${eventType}`);
+          
+          return res.json({
+            success: true,
+            message: 'Violation logged to StudentExam',
+            logged: true,
+            violationCount: studentExam.violations.length
+          });
+        }
+      } catch (error) {
+        console.error('Error saving to StudentExam:', error);
+      }
+      
+      // If still no session found, log it anyway for tracking
+      console.log('⚠️ No active session found for proctoring log, but logging for records:', { examId, studentId, eventType });
       return res.json({
         success: true,
-        message: 'Event logged (no active attempt)',
-        logged: true
+        message: 'Event logged (no active session)',
+        logged: false
       });
     }
 
@@ -746,6 +790,64 @@ router.get('/violations/student/:studentId', authenticateToken, async (req, res)
       success: false,
       message: 'Failed to fetch student violations',
       error: error.message 
+    });
+  }
+});
+
+// Test endpoint to verify violation tracking is working
+router.post('/test-violation', authenticateToken, async (req, res) => {
+  try {
+    const { examId, studentId } = req.body;
+    const userId = req.user.userId;
+    
+    console.log('🧪 TESTING VIOLATION TRACKING:', { examId, studentId, userId });
+    
+    // Try to find StudentExam
+    const StudentExam = (await import('../models/studentExam.model.js')).default;
+    const studentExam = await StudentExam.findOne({ 
+      $or: [
+        { studentId: studentId || userId, examId: examId },
+        { student: studentId || userId, exam: examId }
+      ]
+    });
+    
+    if (studentExam) {
+      // Add test violation
+      if (!studentExam.violations) {
+        studentExam.violations = [];
+      }
+      
+      const testViolation = {
+        type: 'test_violation',
+        description: 'Test violation to verify tracking system',
+        timestamp: new Date(),
+        severity: 'low'
+      };
+      
+      studentExam.violations.push(testViolation);
+      await studentExam.save();
+      
+      console.log('✅ TEST VIOLATION SAVED TO STUDENTEXAM');
+      
+      res.json({
+        success: true,
+        message: 'Test violation saved successfully',
+        violationCount: studentExam.violations.length,
+        studentExamId: studentExam._id
+      });
+    } else {
+      console.log('❌ NO STUDENTEXAM FOUND FOR TEST');
+      res.status(404).json({
+        success: false,
+        message: 'No student exam session found'
+      });
+    }
+  } catch (error) {
+    console.error('❌ TEST VIOLATION ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Test violation failed',
+      error: error.message
     });
   }
 });

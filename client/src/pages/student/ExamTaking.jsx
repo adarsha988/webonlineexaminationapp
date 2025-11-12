@@ -515,10 +515,12 @@ const ExamTaking = () => {
 
   const reportViolation = async (type, details) => {
     try {
-      await studentExamAPI.reportViolation(examId, user?._id, type, details);
+      console.log('📝 REPORTING VIOLATION (ExamTaking):', { examId, studentId: user?._id, type, details });
+      const response = await studentExamAPI.reportViolation(examId, user?._id, type, details);
+      console.log('✅ VIOLATION REPORTED SUCCESSFULLY (ExamTaking):', response);
       setViolations(prev => [...prev, { type, details, timestamp: new Date() }]);
     } catch (error) {
-      console.error('Failed to report violation:', error);
+      console.error('❌ FAILED TO REPORT VIOLATION (ExamTaking):', error.response?.data || error.message);
     }
   };
 

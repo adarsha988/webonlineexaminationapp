@@ -426,7 +426,17 @@ const AIProctoringMonitor = ({ examId, studentId, sessionId, onViolation }) => {
 
     // Send to backend
     try {
-      await axios.post('/api/proctoring/log', {
+      console.log('🚨 SENDING VIOLATION TO BACKEND:', {
+        examId,
+        studentId,
+        sessionId,
+        eventType: type,
+        description,
+        severity,
+        timestamp: new Date().toISOString()
+      });
+      
+      const response = await axios.post('/api/proctoring/log', {
         examId,
         studentId,
         sessionId,
@@ -439,8 +449,10 @@ const AIProctoringMonitor = ({ examId, studentId, sessionId, onViolation }) => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
+      
+      console.log('✅ VIOLATION LOGGED SUCCESSFULLY:', response.data);
     } catch (error) {
-      console.error('Failed to log violation:', error);
+      console.error('❌ FAILED TO LOG VIOLATION:', error.response?.data || error.message);
     }
   };
 

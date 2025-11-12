@@ -49,13 +49,38 @@ const CompletedExams = () => {
   const fetchCompletedExams = async () => {
     try {
       setLoading(true);
-      const data = await studentExamAPI.getCompletedExams(user._id || user.id);
-      setCompletedExams(data.exams || []);
+      const response = await studentExamAPI.getCompletedExams(user._id || user.id);
+      console.log('API Response:', response);
+      
+      // Handle different response formats
+      let examData = [];
+      if (response.data) {
+        examData = Array.isArray(response.data) ? response.data : [];
+      } else if (response.exams) {
+        examData = Array.isArray(response.exams) ? response.exams : [];
+      }
+      
+      // Transform data to match expected format
+      const transformedData = examData.map(item => {
+        const exam = item.exam || item;
+        return {
+          _id: exam._id,
+          title: exam.title,
+          subject: exam.subject,
+          duration: exam.duration,
+          submittedAt: item.submittedAt || item.completedAt,
+          score: item.score || 0,
+          totalMarks: item.maxScore || exam.totalMarks || 0,
+          percentage: item.percentage || 0
+        };
+      });
+      
+      setCompletedExams(transformedData);
     } catch (error) {
       console.error('Error fetching completed exams:', error);
       toast({
         title: "Error",
-        description: "Failed to load completed exams",
+        description: "Failed to load completed exams. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -405,33 +430,70 @@ const CompletedExams = () => {
         </motion.div>
 
         {/* Exams List */}
-        <div className="space-y-4">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-4"
+        >
           {filteredExams.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {completedExams.length === 0 ? 'No completed exams yet' : 'No exams match your filters'}
-                </h3>
-                <p className="text-gray-600 text-center max-w-md">
-                  {completedExams.length === 0 
-                    ? 'Complete some exams to see your results and performance history here.'
-                    : 'Try adjusting your search or filter criteria to find the exams you\'re looking for.'
-                  }
-                </p>
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring" }}
+            >
+              <Card className="border-none shadow-xl bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/20 via-purple-100/20 to-pink-100/20"></div>
+                <CardContent className="flex flex-col items-center justify-center py-16 relative">
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 10, -10, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="mb-6 bg-gradient-to-br from-purple-100 to-indigo-100 p-6 rounded-full"
+                  >
+                    <BookOpen className="h-16 w-16 text-purple-600" />
+                  </motion.div>
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                    {completedExams.length === 0 ? 'No completed exams yet' : 'No exams match your filters'}
+                  </h3>
+                  <p className="text-gray-600 text-center max-w-md text-base leading-relaxed">
+                    {completedExams.length === 0 
+                      ? '🎯 Complete some exams to see your results and performance history here. Your academic journey starts now!'
+                      : '🔍 Try adjusting your search or filter criteria to find the exams you\'re looking for.'
+                    }
+                  </p>
+                  {completedExams.length === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-6"
+                    >
+                      <Button
+                        onClick={() => navigate('/student/dashboard')}
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        Explore Available Exams
+                      </Button>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           ) : (
             filteredExams.map((exam, index) => (
               <motion.div
                 key={exam._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ delay: index * 0.05, type: "spring", stiffness: 100 }}
+                whileHover={{ scale: 1.02, y: -4, transition: { duration: 0.2 } }}
               >
-                <Card className="border-none shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white via-gray-50 to-indigo-50/30 overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100/20 to-purple-100/20 rounded-full blur-2xl"></div>
+                <Card className="border-2 border-transparent hover:border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20 overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-200/30 to-purple-200/30 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-200/20 to-cyan-200/20 rounded-full blur-2xl"></div>
                   <CardContent className="p-6 relative">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
@@ -459,16 +521,16 @@ const CompletedExams = () => {
                           </div>
                           <div className="flex flex-col items-end gap-2">
                             <motion.div
-                              whileHover={{ scale: 1.1 }}
+                              whileHover={{ scale: 1.15, rotate: 5 }}
                               transition={{ type: "spring", stiffness: 400 }}
                             >
                               <Badge 
-                                className={`text-base font-bold px-4 py-2 shadow-lg ${
+                                className={`text-lg font-bold px-5 py-2.5 shadow-xl border-2 border-white/50 ${
                                   (exam.percentage || 0) >= 80 
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
+                                    ? 'bg-gradient-to-r from-green-500 via-emerald-600 to-green-500 text-white' 
                                     : (exam.percentage || 0) >= 60 
-                                      ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white'
-                                      : 'bg-gradient-to-r from-red-500 to-pink-600 text-white'
+                                      ? 'bg-gradient-to-r from-yellow-500 via-orange-600 to-yellow-500 text-white'
+                                      : 'bg-gradient-to-r from-red-500 via-pink-600 to-red-500 text-white'
                                 }`}
                               >
                                 {exam.percentage ? `${exam.percentage.toFixed(1)}%` : 'Pending'}
@@ -498,8 +560,8 @@ const CompletedExams = () => {
               </motion.div>
             ))
           )}
+        </motion.div>
         </div>
-      </div>
       </div>
     </StudentLayout>
   );

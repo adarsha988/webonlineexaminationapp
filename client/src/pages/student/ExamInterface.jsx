@@ -43,9 +43,9 @@ const ExamInterface = () => {
         title: 'Exam Submitted',
         description: 'Your exam has been submitted successfully.',
       });
-      setLocation('/student/results');
+      navigate('/student/results');
     }
-  }, [isSubmitted, setLocation, toast]);
+  }, [isSubmitted, navigate, toast]);
 
   const handleQuestionSelect = (index) => {
     setCurrentQuestionIndex(index);
@@ -81,7 +81,7 @@ const ExamInterface = () => {
   };
 
   const handleSaveAndExit = () => {
-    setLocation('/student/dashboard');
+    navigate('/student/dashboard');
   };
 
   if (examLoading || attemptLoading) {
@@ -103,7 +103,7 @@ const ExamInterface = () => {
               <p className="text-muted-foreground mb-4">
                 The exam you're looking for doesn't exist or you don't have access to it.
               </p>
-              <Button onClick={() => setLocation('/student/dashboard')}>
+              <Button onClick={() => navigate('/student/dashboard')}>
                 Back to Dashboard
               </Button>
             </div>

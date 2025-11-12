@@ -399,7 +399,8 @@ router.post('/:examId/violation', authenticateToken, async (req, res) => {
     const { examId } = req.params;
     const { studentId, violationType, description, timestamp, severity } = req.body;
     
-    console.log(`⚠️ Violation reported: ${violationType} for student ${studentId} in exam ${examId}`);
+    console.log(`⚠️ VIOLATION REPORTED (ExamSessions): ${violationType} for student ${studentId} in exam ${examId}`);
+    console.log('📋 VIOLATION DETAILS:', { studentId, violationType, description, timestamp, severity });
     
     // Find the student exam session
     const studentExam = await StudentExam.findOne({ 
